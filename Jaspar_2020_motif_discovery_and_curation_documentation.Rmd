@@ -6,7 +6,8 @@ geometry: margin=1.5cm
 output: 
   pdf_document
 bibliography: References.bib
-biblio-style: apalike
+# biblio-style: apalike
+csl: NAR.csl
 link-citations: yes
 header-includes: 
   \usepackage{float} \floatplacement{figure}{H} 
@@ -18,12 +19,48 @@ header-includes:
   \usepackage{inputenc} 
 ---
 
+# Summary 
+
+[**JASPAR**](http://jaspar.genereg.net) [@Fornes2020] is an open-access database of curated, non-redundant 
+transcription factor (TF)-binding profiles stored as position frequency matrices 
+(PFMs) for TFs across multiple species in six taxonomic groups: Vertebrates, Plants,
+Fungi, Insects and Urochordata.
+
 
 For JASPAR 2022 release we curated motifs derived from the following sources:
 
-  - Human TF dimers motifs derived from SELEX
-  - Human Zinc finger TF motifs derived from ChIP-seq and ChIP-exo 
-  - *Ciona robusta* motifs derived from SELEX
-  - Yeast motifs derived from ChIP-exo 
-  - *Cnidaria* motifs derived from ATAC-seq
-  
+  - Human TF dimers motifs derived from SELEX [@Jolma2015]
+  - Human Zinc finger TF motifs derived from ChIP-seq and ChIP-exo [@Dogan2020]
+  - *Ciona robusta* motifs derived from SELEX [@Nitta2019]
+  - Yeast motifs derived from ChIP-exo []
+  - *Cnidaria* motifs derived from ATAC-seq [@Hettinger2018]
+
+
+# Requisites
+
+- This motif discovery pipeline requires the regulatory sequences analysis tools [**RSAT**](http://rsat-tagc.univ-mrs.fr/rsat/) [@Nguyen2018] installed in your machine/server.
+
+- [**R**](https://www.r-project.org/) >= 3.6 
+
+
+
+## Pre-processing of human zinc finger motifs
+
+The [**ChIP-seq**](https://www.biorxiv.org/content/biorxiv/early/2020/06/16/630756/DC9/embed/media-9.zip?download=true) and [**ChIP-exo**](https://www.biorxiv.org/content/biorxiv/early/2020/06/16/630756/DC10/embed/media-10.zip?download=true) motif libraries were downloaded from the 
+[**supplementary material**](https://www.biorxiv.org/content/10.1101/630756v4.supplementary-material) from [@Dogan2020].
+
+Each motif comes in a separated file in *cis-bp* motif format. The file name corresponds
+to their uniprot ID.
+
+Run the following command to map the correct TF name from the uniprot ID and convert
+the motifs from *cis-bp* to *transfac* format, the latter allows to add annotations
+and comments to the motifs.
+
+
+```unix
+Rscript
+```
+
+
+\pagebreak
+# References

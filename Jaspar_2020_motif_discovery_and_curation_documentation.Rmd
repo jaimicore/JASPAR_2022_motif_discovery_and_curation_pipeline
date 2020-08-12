@@ -56,10 +56,40 @@ Run the following command to map the correct TF name from the uniprot ID and con
 the motifs from *cis-bp* to *transfac* format, the latter allows to add annotations
 and comments to the motifs.
 
+Download and unzip the each zip file in a separated folder.
 
-```unix
-Rscript
+
+Command: 
+
+- *motif_folder* : directory containing the *cis-bp* motifs
+- *logo_folder*  : directory where the logos will be stored
+- *motif_source* : prefix for naming the result *transfac* file containing all the motifs
+
+```{r, engine = 'bash', eval = FALSE}
+
+## For ChIP-seq derived motifs
+Rscript Zinc_Fingers_C2H2_Gahan_2020/pre-process/Rename_C2H2_motifs.R \
+  --motif_folder Zinc_Fingers_C2H2_Gahan_2020/data/Zinc_fingers_C2H2_ChIP-seq \
+  --logo_folder Zinc_Fingers_C2H2_Gahan_2020/data/Zinc_fingers_C2H2_ChIP-seq/Logos \
+  --motif_source ChIP-seq
+  
+  
+## For ChIP-exo derived motifs
+Rscript Zinc_Fingers_C2H2_Gahan_2020/pre-process/Rename_C2H2_motifs.R \
+  --motif_folder Zinc_Fingers_C2H2_Gahan_2020/data/Zinc_fingers_C2H2_ChIP-exo \
+  --logo_folder Zinc_Fingers_C2H2_Gahan_2020/data/Zinc_fingers_C2H2_ChIP-exo/Logos \
+  --motif_source ChIP-exo
+
 ```
+
+Required software:
+
+  - RSAT
+  - R packages:
+    - data.table
+    - dplyr
+    - optparse
+    - UniprotR
 
 
 \pagebreak

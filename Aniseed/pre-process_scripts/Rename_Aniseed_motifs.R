@@ -36,7 +36,7 @@ species               <- opt$species
 
 # /run/user/280010/gvfs/sftp:host=biotin3.hpc.uio.no,user=jamondra
 input.motif.folder    <- "/storage/scratch/JASPAR_2022/Aniseed/data/Best_round/pfm_best_round"
-output.motif.folder   <- "/scratch/JASPAR_2022/Aniseed/data/Best_round"
+output.motif.folder   <- "/storage/scratch/JASPAR_2022/Aniseed/data/Best_round"
 annotation.table      <- "/storage/scratch/JASPAR_2022/Aniseed/data/Best_round/SELEX_project_TableS1_S3_Nitta_et_al_2019.csv"
 organism              <- "Ciona_robusta"
 
@@ -51,43 +51,55 @@ dir.create(output.motif.folder, showWarnings = F, recursive = T)
 message("; Reading Aniseed annotation table")
 aniseed.tab <- fread(annotation.table, header = T)
 
-aniseed.tab <- aniseed.tab[,c(2,3,4,5,6,7,11:15)]
-  
+aniseed.tab <- aniseed.tab[,c(2:7)]
+
 colnames(aniseed.tab) <- c("TF_fam",
                            "TF_class",
                            "Gene_name",
                            "Alt_gene_name",
                            "DBD",
-                           "SELEX_clone",
-                           "InterproID_1",
-                           "InterproID_2",
-                           "InterproID_3",
-                           "InterproID_4",
-                           "InterproID_5")
+                           "SELEX_clone")
 
-## PArse the Aniseed table
+
+#############################
+## Parse the Aniseed table
 ##
 ## Keep entries with SELEX_clone ID
 ## Transform the interproID colums to one entry per line
+aniseed.tab <- aniseed.tab %>% 
+  dplyr::filter(SELEX_clone != "")
 
+## New file with all motifs
+all.motifs.file <- file.path(pfm.output.dir, paste0("All_", organism, "_motifs_concatenated.tf"))
 
+TF.name.counter <- list()
 
 ## Iterate over each motif file
-for (f in list.files(input.motif.folder)) {
+for (f in list.files(input.motif.folder)[1:10]) {
   
   ## Get Selex probe ID
   selex.id <- gsub(f, pattern = "^([A-Za-z0-9]+)_\\d+.+$", replacement = "\\1")
   tf <- as.vector(subset(aniseed.tab, SELEX_clone == selex.id)$Gene_name)
   
+  ## Renamed problematic names
+  ##
+  ## Tbx2/3  -> Tbx2_3
+  tf <- gsub(tf, pattern = "/", replacement = "-")
+  message("; Processing ", tf, " motif - SELEX probe: ", selex.id)
+  
   ## Count the number of times this TF appears in the file list
   if (is.null(TF.name.counter[[tf]])) {
+    TF.name.counter[[tf]] <- NULL
     TF.name.counter[[tf]] <- 1
   } else {
+    
+    message("==================== ", TF.name.counter[[tf]])
     TF.name.counter[[tf]] <- TF.name.counter[[tf]] + 1
+    message("++++++++++++++++++++ ", TF.name.counter[[tf]])
   }
   
-
-  message("; Processing ", tf, " motif")
+  
+  
   
   ## Set new motif file name
   new.tmp.file <- file.path(pfm.output.dir, paste0(tf, "_pfm.jaspar"))
@@ -95,24 +107,25 @@ for (f in list.files(input.motif.folder)) {
   
   ## Add a header to the motifs
   add.header.cmd <- paste0( '(echo ">',tf,'" && cat ', file.path(input.motif.folder, f), ') > ', new.tmp.file )
-  message("; ", add.header.cmd)
+  # message("; ", add.header.cmd)
   system(add.header.cmd)
   
   
   ## RSAT convert-matrix command
   ## From cis-bp to transfac format
   ## Add manually the TF name
-  convert.matrix.cmd <- paste0("convert-matrix -i ", file.path(input.motif.folder, f), " -from cis-bp -to tf -multiply 1000 -attr name ", tf," -attr accession ", tf, " > ", new.file)
-  message("; ", convert.matrix.cmd)
+  new.tf.file <- file.path(pfm.output.dir, paste0(tf, "_pfm.tf"))
+  convert.matrix.cmd <- paste0("convert-matrix -i ", new.tmp.file, " -from jaspar -to tf -multiply 1000  > ", new.tf.file)
+  # message("; ", convert.matrix.cmd)
   system(convert.matrix.cmd)
   
   ## Concat all motifs in a single file
-  cat.all.motifs.cmd <- paste0("cat ", new.file, " >> ", all.motifs.file)
+  cat.all.motifs.cmd <- paste0("cat ", new.tf.file, " >> ", all.motifs.file)
   system(cat.all.motifs.cmd)
   
-  ## Remove the txt (cis-bp format) file
-  rm.cisbp.file <- paste0("rm -rf ", f)
-  system(rm.cisbp.file)
+  ## Remove the jaspar temporal file
+  rm.tmp.file <- paste0("rm -rf ", new.tmp.file)
+  system(rm.tmp.file)
 }
 
 

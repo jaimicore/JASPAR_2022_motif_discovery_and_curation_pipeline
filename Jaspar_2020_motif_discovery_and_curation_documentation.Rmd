@@ -42,9 +42,10 @@ For JASPAR 2022 release we curated motifs derived from the following sources:
 
 - [**R**](https://www.r-project.org/) >= 3.6 
 
+___
 
 
-## Pre-processing of human zinc finger motifs
+## Pre-processing of human zinc finger motifs from Dogan 2020
 
 The [**ChIP-seq**](https://www.biorxiv.org/content/biorxiv/early/2020/06/16/630756/DC9/embed/media-9.zip?download=true) and [**ChIP-exo**](https://www.biorxiv.org/content/biorxiv/early/2020/06/16/630756/DC10/embed/media-10.zip?download=true) motif libraries were downloaded from the 
 [**supplementary material**](https://www.biorxiv.org/content/10.1101/630756v4.supplementary-material) from [@Dogan2020].
@@ -68,16 +69,16 @@ Command:
 ```{r, engine = 'bash', eval = FALSE}
 
 ## For ChIP-seq derived motifs
-Rscript Zinc_Fingers_C2H2_Gahan_2020/pre-process/Rename_C2H2_motifs.R \
-  --motif_folder Zinc_Fingers_C2H2_Gahan_2020/data/Zinc_fingers_C2H2_ChIP-seq \
-  --logo_folder Zinc_Fingers_C2H2_Gahan_2020/data/Zinc_fingers_C2H2_ChIP-seq/Logos \
+Rscript Zinc_Fingers_C2H2_Dogan_2020/pre-process/Rename_C2H2_motifs.R \
+  --motif_folder Zinc_Fingers_C2H2_Dogan_2020/data/Zinc_fingers_C2H2_ChIP-seq \
+  --logo_folder Zinc_Fingers_C2H2_Dogan_2020/data/Zinc_fingers_C2H2_ChIP-seq/Logos \
   --motif_source ChIP-seq
   
   
 ## For ChIP-exo derived motifs
-Rscript Zinc_Fingers_C2H2_Gahan_2020/pre-process/Rename_C2H2_motifs.R \
-  --motif_folder Zinc_Fingers_C2H2_Gahan_2020/data/Zinc_fingers_C2H2_ChIP-exo \
-  --logo_folder Zinc_Fingers_C2H2_Gahan_2020/data/Zinc_fingers_C2H2_ChIP-exo/Logos \
+Rscript Zinc_Fingers_C2H2_Dogan_2020/pre-process/Rename_C2H2_motifs.R \
+  --motif_folder Zinc_Fingers_C2H2_Dogan_2020/data/Zinc_fingers_C2H2_ChIP-exo \
+  --logo_folder Zinc_Fingers_C2H2_Dogan_2020/data/Zinc_fingers_C2H2_ChIP-exo/Logos \
   --motif_source ChIP-exo
 
 ```
@@ -90,6 +91,25 @@ Required software:
     - dplyr
     - optparse
     - UniprotR
+
+
+___
+
+
+## Pre-processing of *Ciona robusta* motifs derived from SELEX
+
+The motifs were downloaded from the [**Anised**](https://www.aniseed.cnrs.fr/aniseed/)
+database, in the [**download section**](https://www.aniseed.cnrs.fr/aniseed/download/download_data).
+
+Download the following files:
+  
+  - *Selex seq section (SELEX-seq best round 6-mer enrichments 4.5 MB)*
+  - *SELEX-seq table S1-S3, Nitta et al. 2019 2.7 MB*
+  
+The first file contains the best PFM of each TF, the second file contains the annotation
+of the TFs (IDs, name, family, interprot ID).
+
+
 
 
 \pagebreak

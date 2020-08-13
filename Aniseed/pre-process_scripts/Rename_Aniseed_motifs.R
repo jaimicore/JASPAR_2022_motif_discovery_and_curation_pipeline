@@ -34,15 +34,15 @@ motif.source          <- opt$annotation_table
 species               <- opt$species
 
 
-
-input.motif.folder       <- "/run/user/280010/gvfs/sftp:host=biotin3.hpc.uio.no,user=jamondra/storage/scratch/JASPAR_2022/Aniseed/data/Best_round/pfm_best_round"
-output.motif.folder        <- "/run/user/280010/gvfs/sftp:host=biotin3.hpc.uio.no,user=jamondra/storage/scratch/JASPAR_2022/Aniseed/data/Best_round"
-annotation.table   <- "/run/user/280010/gvfs/sftp:host=biotin3.hpc.uio.no,user=jamondra/storage/scratch/JASPAR_2022/Aniseed/data/Best_round/SELEX_project_TableS1_S3_Nitta_et_al_2019.csv"
-organism           <- "Ciona_robusta"
+# /run/user/280010/gvfs/sftp:host=biotin3.hpc.uio.no,user=jamondra
+input.motif.folder    <- "/storage/scratch/JASPAR_2022/Aniseed/data/Best_round/pfm_best_round"
+output.motif.folder   <- "/scratch/JASPAR_2022/Aniseed/data/Best_round"
+annotation.table      <- "/storage/scratch/JASPAR_2022/Aniseed/data/Best_round/SELEX_project_TableS1_S3_Nitta_et_al_2019.csv"
+organism              <- "Ciona_robusta"
 
 ## Create output directory
 pfm.output.dir <- file.path(output.motif.folder, "PFMs")
-dir.create(pfm.output.dir, showWarnings = F, recursive = T)
+dir.create(output.motif.folder, showWarnings = F, recursive = T)
 
 
 #############################################
@@ -69,19 +69,8 @@ colnames(aniseed.tab) <- c("TF_fam",
 ##
 ## Keep entries with SELEX_clone ID
 ## Transform the interproID colums to one entry per line
-aniseed.tab <- aniseed.tab %>% 
-                dplyr::filter(SELEX_clone != "") %>% 
-                mutate(InterproID = paste(InterproID_1, InterproID_2, InterproID_3, InterproID_4, InterproID_5, sep = ",")) %>% 
-                transform(InterproID = gsub(x = InterproID, pattern = ",{2,}", replacement = "")) %>% 
-                select(-c(InterproID_1, InterproID_2, InterproID_3, InterproID_4, InterproID_5)) %>% 
-                separate_rows(InterproID, sep = ",")
 
 
-## New file with all motifs
-all.motifs.file <- file.path(motif.folder, paste0("All_", organism, "_motifs_concatenated.tf"))
-
-TF.name.counter <- list()
-tmp.files.list <- NULL
 
 ## Iterate over each motif file
 for (f in list.files(input.motif.folder)) {

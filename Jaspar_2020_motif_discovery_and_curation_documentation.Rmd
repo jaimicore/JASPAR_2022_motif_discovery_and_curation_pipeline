@@ -106,9 +106,39 @@ Download the following files:
   - *Selex seq section (SELEX-seq best round 6-mer enrichments 4.5 MB)*
   - *SELEX-seq table S1-S3, Nitta et al. 2019 2.7 MB*
   
-The first file contains the best PFM of each TF, the second file contains the annotation
-of the TFs (IDs, name, family, interprot ID).
+The first file contains the best PFM of each TF.
+The second file contains the annotation of the TFs (IDs, name, family, interprot ID),
+we extracted the first sheet and removed the first 2 lines.
 
+
+Command: 
+
+- *input.motif.folder*   : directory containing the *Aniseed* motifs
+- *output.motif.folder*  : directory where the logos and pfms will be stored
+- *annotation.table*     : *Aniseed* annotation table
+- *organism*             : Ciona_robusta (suffix to name output files)
+
+
+```{r, engine = 'bash', eval = FALSE}
+
+## For Aniseed (Ciona robusta) SELEX motifs
+Rscript Aniseed/pre-process_scripts/Rename_Aniseed_motifs.R \
+  --input.motif.folder Aniseed/data/Best_round/pfm_best_round \
+  --output.motif.folder Aniseed/data/Best_round \
+  --annotation.table Aniseed/data/Best_round/SELEX_project_TableS1_S3_Nitta_et_al_2019.csv \
+  --organism ChIP-Ciona_robusta
+
+```
+
+Required software:
+
+  - RSAT
+  - R packages:
+    - data.table
+    - dplyr
+    - optparse
+
+___
 
 
 

@@ -1,26 +1,21 @@
 ---
-title: 'JASPAR 2022 motif discovery pipeline and motif annotation'
+title: "JASPAR 2022 motif discovery pipeline and motif annotation"
 author: "Jaime A Castro-Mondragon"
 date: 'Last Update: `r Sys.Date()`'
+output:
+  rmdformats::readthedown:
+    self_contained: false
+    thumbnails: true
+    lightbox: true
+    gallery: false
+    highlight: tango
 geometry: margin=1.5cm
-output: 
-  pdf_document
 bibliography: References.bib
-# biblio-style: apalike
 csl: NAR.csl
-link-citations: yes
-header-includes: 
-  \usepackage{float} \floatplacement{figure}{H} 
-  \newcommand{\beginsupplement}{\setcounter{table}{0}
-  \renewcommand{\thetable}{S\arabic{table}} \setcounter{figure}{0}
-  \renewcommand{\thefigure}{S\arabic{figure}}}
-  \usepackage{fullpage}
-  \usepackage{pdflscape}
-  \usepackage{inputenc} 
 ---
-
+  
 # Summary 
-
+  
 [**JASPAR**](http://jaspar.genereg.net) [@Fornes2020] is an open-access database of curated, non-redundant 
 transcription factor (TF)-binding profiles stored as position frequency matrices 
 (PFMs) for TFs across multiple species in six taxonomic groups: Vertebrates, Plants,
@@ -28,24 +23,132 @@ Fungi, Insects and Urochordata.
 
 
 For JASPAR 2022 release we curated motifs derived from the following sources:
+  
+- Human TF dimers motifs derived from SELEX [@Jolma2015]
+- Human TF motifs detected by SELEX in free DNA [@Zhu2018]
+- Human TF motifs detected by SELEX in nucleosomal DNA [@Zhu2018]
+- Human Zinc finger TF motifs derived from ChIP-seq [@Dogan2020]
+- Human Zinc finger TF motifs derived from ChIP-exo [@Dogan2020]
+- *Ciona robusta* motifs derived from SELEX [@Nitta2019]
+<!-- - Yeast motifs derived from ChIP-exo [] -->
+<!-- - *Cnidaria* motifs derived from ATAC-seq [@Hettinger2018] -->
+  
 
-  - Human TF dimers motifs derived from SELEX [@Jolma2015]
-  - Human TF motifs detected by SELEX in free DNA [@Zhu2018]
-  - Human TF motifs detected by SELEX in nucleosomal DNA [@Zhu2018]
-  - Human Zinc finger TF motifs derived from ChIP-seq [@Dogan2020]
-  - Human Zinc finger TF motifs derived from ChIP-exo [@Dogan2020]
-  - *Ciona robusta* motifs derived from SELEX [@Nitta2019]
-  <!-- - Yeast motifs derived from ChIP-exo [] -->
-  <!-- - *Cnidaria* motifs derived from ATAC-seq [@Hettinger2018] -->
+# Motif discovery pipeline
 
 
-# Requisites
-
-- This motif discovery pipeline requires the regulatory sequences analysis tools [**RSAT**](http://rsat-tagc.univ-mrs.fr/rsat/) [@Nguyen2018] installed in your machine/server.
-
+## Software required
+  
+- Regulatory sequences analysis tools [**RSAT**](http://rsat-tagc.univ-mrs.fr/rsat/) [@Nguyen2018]
 - [**R**](https://www.r-project.org/) >= 3.6 
+- Perl TFBS modules: http://tfbs.genereg.net/
+- *snakemake*: https://snakemake.readthedocs.io/en/stable/index.html
+- pdfunite
 
-___
+
+## Configuration file
+
+Set the following variables in the config file:
+  
+  
+### Software variables
+  
+Assuming that you are in the *motif_discovery_pipeline/ChIP-atlas* folder:
+  
+- *bin* : ../bin 
+- *python* : python2.7 
+- *RSAT* : /lsc/rsat
+
+You can see where RSAT program are using the following command: ```echo $RSAT```
+
+
+### Organism specific variables
+
+- data_folder : This is the folder where the input file provided as *narrowPeak* must be placed. See *Expected folder structure* for more information about the folder and file names.
+- genome_fasta: The path to the *.fa* file with the organism's genome sequence.
+- genome_size: the path to the *.chrom.sizes* file.
+- TF_Experiment_map: The path to the experiment table.
+- out_dir: The path to results folder where all the analysis will be stored, one folder per experiment. Don't forget to indicate the genome in the path. Example: ``` ChIP-atlas_results/ce10```
+
+
+## Launching the pipeline
+
+### Expected folder structure
+
+The Snakefile will launch a motif analysis + centrality enrichment test for each
+discovered motif of each dataset (experiment). To launch the pipeline we only required
+a *narrowPeak* file that must be located in the 'data_folder' specified in the 
+config file (see *configuration file* section).
+
+Example:
+  ```{r, engine = 'bash', eval = FALSE}
+cd data_folder
+
+.
+├── ERX032305_S2_Lint-1
+│   └── ERX032305_S2_Lint-1_peaks.narrowPeak
+└── ERX032306_Kc_Lint-1
+    └── ERX032306_Kc_Lint-1_peaks.narrowPeak
+```
+
+Every EXPERIMENT_FOLDER in the data folder must contain a narrowPeak file with the same name and the suffix *\_peaks*, see tree above.
+Example:
+
+  ```{r, engine = 'bash', eval = FALSE}
+EXPERIMENT_FOLDER = ERX032305_S2_Lint-1
+narrowPeak        = ERX032305_S2_Lint-1_peaks.narrowPeak
+```
+This is the data structure required by the pipeline.
+
+
+### Launching the *snakemake* workflow
+
+There are two main task/steps in this pipeline:
+  
+- Step 1: motif discovery. The program *RSAT peak-motifs* [@Thomas-Chollier2012]
+is called, this program runs four motif discovery algorithms (over-represented k-mers,
+over-represented spaced-k-mers, positionally biased k-mers, k-mers enriched in 
+central windows) to discover significant motifs, see 10.1093/nar/gkr1104. This can
+be launched by running the *Snakefile*, you can parallelize the process using the
+argument *--cores*.
+
+The *Snakefile* contain a series of rules, for the motif discovery steps, it searches for datasets in *narrowPeak* format. 
+
+- Step 2: selecting centrally enriched motifs. Note that given the ChIP-seq dataset quality and the number of peaks may vary among the datasets, many datasets may not produce any significant motif. A priori, the number of discovered motifs is unknown, so we use *checkpoints* within the *Snakefile*.
+
+
+```{r, engine = 'bash', eval = FALSE}
+snakemake [--cores X]
+```
+
+
+## Troubleshooting
+
+
+### rule RSAT_peakmotifs_per_exp
+
+- *RSAT peak-motifs* none motif found: verify that the input *NarrowPeak* is not empty.
+
+- *RSAT local-word-analysis* python version: this program is written in python and called within RSAT peak-motifs. In case that the default python environment is 3.5, local-word-analysis will not run, therefore the solution is modify directly the line in the $RSAT/perl-scripts/peak-motifs script adding "python2.7" before the program is called.
+
+- *RSAT position-analysis* founds highly repetitive/uninformative motifs: The default interval for position-analysis is 50nt, which is too large for the JASPAR pipeline (where the peaks have a size of 101), this may produce non-relevant artifact motifs. By changing the interval to 25 the program may found the expected TF motif. Note that this change was already set in the config file.
+
+
+### rule annotate_best_centrimo_experiment
+
+- Verify that the variables in the *awk* command correspond to the correct fields in your experiment table.
+
+
+### rule best_centrimo_experiment_logo
+
+- Input files not found: this may occur when the Experiment_TF ID contains certain characters as: *(*, *)*, *[*, *]*, *.*, */*, " "(one or more spaces). Before launching the pipeline, verify that none of the folders in your data folder contains such characters, the simplest option is remove them or substitute them by '*-*'.
+
+## Memory requirements
+
+If you launch the *Snakefile* using multiple cores (See *Launching the *snakemake* workflow* section), each core will use ~1GB of memory in your computer.
+
+
+# Collecting and preparing motifs for curation
 
 
 ## Pre-processing of human zinc finger motifs from Dogan 2020
@@ -64,7 +167,7 @@ Download and unzip the each zip file in a separated folder.
 
 
 Command: 
-
+  
 - *motif_folder* : directory containing the *cis-bp* motifs
 - *logo_folder*  : directory where the logos will be stored
 - *motif_source* : prefix for naming the result *transfac* file containing all the motifs
@@ -73,30 +176,30 @@ Command:
 
 ## For ChIP-seq derived motifs
 Rscript Zinc_Fingers_C2H2_Dogan_2020/pre-process/Rename_C2H2_motifs.R \
-  --motif_folder Zinc_Fingers_C2H2_Dogan_2020/data/Zinc_fingers_C2H2_ChIP-seq \
-  --logo_folder Zinc_Fingers_C2H2_Dogan_2020/data/Zinc_fingers_C2H2_ChIP-seq/Logos \
-  --motif_source ChIP-seq
-  
-  
+--motif_folder Zinc_Fingers_C2H2_Dogan_2020/data/Zinc_fingers_C2H2_ChIP-seq \
+--logo_folder Zinc_Fingers_C2H2_Dogan_2020/data/Zinc_fingers_C2H2_ChIP-seq/Logos \
+--motif_source ChIP-seq
+
+
 ## For ChIP-exo derived motifs
 Rscript Zinc_Fingers_C2H2_Dogan_2020/pre-process/Rename_C2H2_motifs.R \
-  --motif_folder Zinc_Fingers_C2H2_Dogan_2020/data/Zinc_fingers_C2H2_ChIP-exo \
-  --logo_folder Zinc_Fingers_C2H2_Dogan_2020/data/Zinc_fingers_C2H2_ChIP-exo/Logos \
-  --motif_source ChIP-exo
+--motif_folder Zinc_Fingers_C2H2_Dogan_2020/data/Zinc_fingers_C2H2_ChIP-exo \
+--logo_folder Zinc_Fingers_C2H2_Dogan_2020/data/Zinc_fingers_C2H2_ChIP-exo/Logos \
+--motif_source ChIP-exo
 
 ```
 
 Required software:
+  
+- RSAT
+- R packages:
+  - data.table
+  - dplyr
+  - optparse
+  - UniprotR
 
-  - RSAT
-  - R packages:
-    - data.table
-    - dplyr
-    - optparse
-    - UniprotR
 
 
-___
 
 
 ## Pre-processing of *Ciona robusta* motifs derived from SELEX
@@ -109,14 +212,14 @@ Download the following files:
   - *Selex seq section (SELEX-seq best round 6-mer enrichments 4.5 MB)*
   - *SELEX-seq table S1-S3, Nitta et al. 2019 2.7 MB*
   
-The first file contains the best PFM of each TF.
+  The first file contains the best PFM of each TF.
 The second file contains the annotation of the TFs (IDs, name, family, interprot ID),
 we extracted the first sheet and removed the first 2 lines.
 
 
 Command: 
-
-- *input.motif.folder*   : directory containing the *Aniseed* motifs
+  
+  - *input.motif.folder*   : directory containing the *Aniseed* motifs
 - *output.motif.folder*  : directory where the logos and pfms will be stored
 - *annotation.table*     : *Aniseed* annotation table
 - *organism*             : Ciona_robusta (suffix to name output files)
@@ -126,22 +229,22 @@ Command:
 
 ## For Aniseed (Ciona robusta) SELEX motifs
 Rscript Aniseed/pre-process_scripts/Rename_Aniseed_motifs.R \
-  --input.motif.folder Aniseed/data/Best_round/pfm_best_round \
-  --output.motif.folder Aniseed/data/Best_round \
-  --annotation.table Aniseed/data/Best_round/SELEX_project_TableS1_S3_Nitta_et_al_2019.csv \
-  --organism ChIP-Ciona_robusta
+--input.motif.folder Aniseed/data/Best_round/pfm_best_round \
+--output.motif.folder Aniseed/data/Best_round \
+--annotation.table Aniseed/data/Best_round/SELEX_project_TableS1_S3_Nitta_et_al_2019.csv \
+--organism ChIP-Ciona_robusta
 
 ```
 
 Required software:
-
+  
   - RSAT
-  - R packages:
-    - data.table
-    - dplyr
-    - optparse
+- R packages:
+  - data.table
+- dplyr
+- optparse
 
-___
+
 
 
 
@@ -150,7 +253,7 @@ ___
 These motifs were directly taken from the *RSAT* website, in the [**motif databases**](http://rsat-tagc.univ-mrs.fr/rsat/motif_databases/NCAP-SELEX/) section.
 
 
-___
+
 
 
 ## Pre-processing of human TF dimer SELEX motifs

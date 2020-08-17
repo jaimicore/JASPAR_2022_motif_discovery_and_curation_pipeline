@@ -53,9 +53,9 @@ Set the following variables in the config file:
   
 ### Software variables
   
-Assuming that you are in the *motif_discovery_pipeline/ChIP-atlas* folder:
+Assuming that you are in the *JASPAR_2022_motif_discovery_and_curation_pipeline* folder:
   
-- *bin* : ../bin 
+- *bin* : bin 
 - *python* : python2.7 
 - *RSAT* : /lsc/rsat
 
@@ -67,8 +67,8 @@ You can see where RSAT program are using the following command: ```echo $RSAT```
 - data_folder : This is the folder where the input file provided as *narrowPeak* must be placed. See *Expected folder structure* for more information about the folder and file names.
 - genome_fasta: The path to the *.fa* file with the organism's genome sequence.
 - genome_size: the path to the *.chrom.sizes* file.
-- TF_Experiment_map: The path to the experiment table.
-- out_dir: The path to results folder where all the analysis will be stored, one folder per experiment. Don't forget to indicate the genome in the path. Example: ``` ChIP-atlas_results/ce10```
+- TF_Experiment_map: The path to the experiment table. The pipeline expects at least three columns in the following order: 1) Experiment ID, 2) Condition/Cell-type, and 3) TF.
+- out_dir: The path to results folder where all the analysis will be stored, one folder per experiment. Don't forget to indicate the genome in the path. Example: ```ReMap2020/Hs_hg38```
 
 
 ## Launching the pipeline
@@ -85,18 +85,18 @@ Example:
 cd data_folder
 
 .
-├── ERX032305_S2_Lint-1
-│   └── ERX032305_S2_Lint-1_peaks.narrowPeak
-└── ERX032306_Kc_Lint-1
-    └── ERX032306_Kc_Lint-1_peaks.narrowPeak
+├── ENCSR000BST_GATA3_MCF-7
+│   └── ENCSR000BST_GATA3_MCF-7_peaks.narrowPeak
+└── ENCSR000ATT_FOXA1_MCF-7
+    └── ENCSR000ATT_FOXA1_MCF-7_peaks.narrowPeak
 ```
 
 Every EXPERIMENT_FOLDER in the data folder must contain a narrowPeak file with the same name and the suffix *\_peaks*, see tree above.
 Example:
 
   ```{r, engine = 'bash', eval = FALSE}
-EXPERIMENT_FOLDER = ERX032305_S2_Lint-1
-narrowPeak        = ERX032305_S2_Lint-1_peaks.narrowPeak
+EXPERIMENT_FOLDER = ENCSR000BST_GATA3_MCF-7
+narrowPeak        = ENCSR000BST_GATA3_MCF-7_peaks.narrowPeak
 ```
 This is the data structure required by the pipeline.
 
@@ -108,18 +108,41 @@ There are two main task/steps in this pipeline:
 - Step 1: motif discovery. The program *RSAT peak-motifs* [@Thomas-Chollier2012]
 is called, this program runs four motif discovery algorithms (over-represented k-mers,
 over-represented spaced-k-mers, positionally biased k-mers, k-mers enriched in 
-central windows) to discover significant motifs, see 10.1093/nar/gkr1104. This can
-be launched by running the *Snakefile*, you can parallelize the process using the
-argument *--cores*.
+central windows) to discover significant motifs on each set of ChIP-seq peaks. 
+This can be launched by running the *Snakefile*, you can parallelize the process
+using the argument *--cores*.
 
 The *Snakefile* contain a series of rules, for the motif discovery steps, it searches for datasets in *narrowPeak* format. 
 
-- Step 2: selecting centrally enriched motifs. Note that given the ChIP-seq dataset quality and the number of peaks may vary among the datasets, many datasets may not produce any significant motif. A priori, the number of discovered motifs is unknown, so we use *checkpoints* within the *Snakefile*.
+- Step 2: selecting centrally enriched motifs. Note that given the ChIP-seq dataset
+quality and the number of peaks may vary among the datasets, many datasets may not
+produce any significant motif. A priori, the number of discovered motifs is unknown,
+so we use *checkpoints* within the *Snakefile*.
+
+### Selecting config file
+
+This pipeline is generic for any narrowPeak file. In order to use a single pipeline 
+for data coming in multiple input format, we use multiple configuration files 
+(folder *config_files*) containing the configuration files for multiple organisms
+and multiple ChIP-seq repositories (e.g., ReMap [@Chenevy2020], GTRD [@Yevshin2019],
+ChIP-atlas [@Oki2018], CistromeDB [@Zheng2018]).
+
+In order to run the pipeline, users must enter one of the following analysis IDs:
+
+- **ReMap 2020 Homo sapiens hg38** : ReMap2022_Human
 
 
 ```{r, engine = 'bash', eval = FALSE}
-snakemake [--cores X]
+snakemake --config analysis_id=ReMap2022_Human [--cores X]
 ```
+
+All the *snakemake* rules in the pipeline, except the first one (*extract_peak_summits*)
+are the same. The reason is because the input genomic coordinates could vary across
+the source and may require to parse the table.
+
+In the previous chunk, the argument *--config analysis_id=ReMap2022_Human* indicates
+to the pipeline to use the config file for ReMap 2020 Homo sapiens hg38, and run
+its respective  *extract_peak_summits* rule.
 
 
 ## Troubleshooting
@@ -219,7 +242,7 @@ we extracted the first sheet and removed the first 2 lines.
 
 Command: 
   
-  - *input.motif.folder*   : directory containing the *Aniseed* motifs
+- *input.motif.folder*   : directory containing the *Aniseed* motifs
 - *output.motif.folder*  : directory where the logos and pfms will be stored
 - *annotation.table*     : *Aniseed* annotation table
 - *organism*             : Ciona_robusta (suffix to name output files)
@@ -238,14 +261,11 @@ Rscript Aniseed/pre-process_scripts/Rename_Aniseed_motifs.R \
 
 Required software:
   
-  - RSAT
+- RSAT
 - R packages:
   - data.table
-- dplyr
-- optparse
-
-
-
+  - dplyr
+  - optparse
 
 
 ## Pre-processing of CAP and NCAP SELEX motifs

@@ -30,7 +30,7 @@ For JASPAR 2022 release we curated motifs derived from the following sources:
 - Human Zinc finger TF motifs derived from ChIP-seq [@Dogan2020]
 - Human Zinc finger TF motifs derived from ChIP-exo [@Dogan2020]
 - *Ciona robusta* motifs derived from SELEX [@Nitta2019]
-<!-- - Yeast motifs derived from ChIP-exo [] -->
+- Yeast motifs derived from ChIP-exo [@Yamada2020]
 <!-- - *Cnidaria* motifs derived from ATAC-seq [@Hettinger2018] -->
   
 
@@ -69,6 +69,32 @@ You can see where RSAT program are using the following command: ```echo $RSAT```
 - genome_size: the path to the *.chrom.sizes* file.
 - TF_Experiment_map: The path to the experiment table. The pipeline expects at least three columns in the following order: 1) Experiment ID, 2) Condition/Cell-type, and 3) TF.
 - out_dir: The path to results folder where all the analysis will be stored, one folder per experiment. Don't forget to indicate the genome in the path. Example: ```ReMap2020/Hs_hg38```
+
+
+## Dowload genomes and chromosome size file
+
+### sacCer3 (UCSC)
+
+Download genome from UCSC through command-line:
+
+```
+## Download the twoBitToFa tool for format conversion
+## It is not necessary to download twoBitToFa every time you download a genome
+wget http://hgdownload.cse.ucsc.edu/admin/exe/linux.x86_64/twoBitToFa 
+chmod +x twoBitToFa
+
+## Download chromosome sizes file
+wget http://hgdownload.cse.ucsc.edu/goldenPath/sacCer3/bigZips/sacCer3.chrom.sizes
+
+## Download the 2bit version of sacCer3 genome
+wget http://hgdownload.cse.ucsc.edu/goldenPath/sacCer3/bigZips/sacCer3.2bit
+
+## Get the fasta file
+./twoBitToFa sacCer3.2bit sacCer3.fa
+```
+
+Once the *.fa* and *.chrom.sizes* were downloaded, set the *genome_fasta* and
+*genome_size* variables in the corresponding *config.yaml* file
 
 
 ## Launching the pipeline
@@ -129,7 +155,8 @@ ChIP-atlas [@Oki2018], CistromeDB [@Zheng2018]).
 
 In order to run the pipeline, users must enter one of the following analysis IDs:
 
-- **ReMap 2020 Homo sapiens hg38** : ReMap2022_Human
+- **ReMap 2020 Homo sapiens hg38** : ReMap2020_Human
+- **ChIP-exo S cerevisiae peaks from ChExMix** : ChExMix_sacCer3
 
 
 ```{r, engine = 'bash', eval = FALSE}
@@ -170,6 +197,42 @@ its respective  *extract_peak_summits* rule.
 
 If you launch the *Snakefile* using multiple cores (See *Launching the *snakemake* workflow* section), each core will use ~1GB of memory in your computer.
 
+
+# Collecting and preparing peaks datasets
+
+## Collecting and preparing ChIP-exo peaks derived from ChExMix in yeast (sacCer3)
+
+ChIP-exo datasets were kindly provided by [**Shaun Mahony**](http://mahonylab.org/)
+derived from the ChExMix peak-caller [@Yamada2020].
+
+The ChIP-exo peaks were parsed to the required format using the following script:
+
+Command: 
+  
+- *peaks_in_folder*   : directory containing the ChExMix peaks
+- *peaks_out_folder*  : directory that will containg the parsed ChExMix peaks
+- *suffix*            : suffix for the putput files (*_peaks.narrowPeak*)
+
+```{r, engine = 'bash', eval = FALSE}
+
+## For ChIP-seq derived motifs
+Rscript ChExMix_sacCer3/pre-process_scripts/Preprocess_chexmix_peaks.R \
+--peaks_in_folder ChExMix_sacCer3/data/yep-peaks/ \
+--peaks_out_folder ChExMix_sacCer3/data/Yeast_SacCer3 \
+--suffix '_peaks.narrowPeak'
+
+```
+
+This script will pre-process the ChExMix peaks in the format required by this pipeline
+and will also produce the **TF - Experiment ID table** that is required by this
+pipeline to annotate the motifs.
+
+Required software:
+
+- R packages:
+  - data.table
+  - dplyr
+  - optparse
 
 # Collecting and preparing motifs for curation
 

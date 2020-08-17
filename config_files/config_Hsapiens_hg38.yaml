@@ -4,7 +4,7 @@ author: Jaime_A_Castro_Mondragon
 ## === ##
 ## Bin ##
 ## === ##
-bin : /storage/mathelierarea/processed/jamondra/Projects/JASPAR/JASPAR_2022/Motif_discovery_pipeline/JASPAR_2022_motif_discovery_and_curation_pipeline/Example_for_test/REMAP/bin
+bin : /storage/scratch/JASPAR_2022/bin
 
 python : python2.7
 RSAT : /lsc/rsat

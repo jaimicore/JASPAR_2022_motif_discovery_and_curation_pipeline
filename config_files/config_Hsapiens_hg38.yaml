@@ -1,0 +1,34 @@
+################################################################
+author: Jaime_A_Castro_Mondragon
+
+## === ##
+## Bin ##
+## === ##
+bin : /storage/mathelierarea/processed/jamondra/Projects/JASPAR/JASPAR_2022/Motif_discovery_pipeline/JASPAR_2022_motif_discovery_and_curation_pipeline/Example_for_test/REMAP/bin
+
+python : python2.7
+RSAT : /lsc/rsat
+
+
+## ============================================= ##
+## Motif discovery (RSAT peak-motifs) parameters ##
+## ============================================= ##
+peakmotifs_disco : oligos,dyads,positions,local_words
+peakmotifs_disco_nb_motifs : 2
+peakmotifs_disco_min_oligo : 6
+peakmotifs_disco_max_oligo : 7
+peakmotifs_class_interval : 25
+
+
+central_pvalue : -200
+
+
+## ==================================================== ##
+## Homo sapiens hg38 : folders and required input files ##
+## ==================================================== ##
+data_folder : /storage/mathelierarea/processed/jamondra/Projects/JASPAR/JASPAR_2022/Motif_discovery_pipeline/JASPAR_2022_motif_discovery_and_curation_pipeline/Example_for_test/REMAP/data
+TF_Experiment_map : /storage/mathelierarea/processed/jamondra/Projects/JASPAR/JASPAR_2022/Motif_discovery_pipeline/JASPAR_2022_motif_discovery_and_curation_pipeline/Example_for_test/REMAP/REMAP_exp_TF_map.txt
+genome_fasta : /storage/mathelierarea/raw/UCSC/hg38/Sequence/WholeGenomeFasta/genome.fa
+genome_size : /storage/mathelierarea/raw/UCSC/hg38/Sequence/WholeGenomeFasta/hg38_chrom_sizes
+out_dir : /storage/mathelierarea/processed/jamondra/Projects/JASPAR/JASPAR_2022/Motif_discovery_pipeline/JASPAR_2022_motif_discovery_and_curation_pipeline/Example_for_test/REMAP/results
+curation_dir : /storage/mathelierarea/processed/jamondra/Projects/JASPAR/JASPAR_2022/Motif_discovery_pipeline/JASPAR_2022_motif_discovery_and_curation_pipeline/Example_for_test/REMAP/results/curation/remap

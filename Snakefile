@@ -14,7 +14,7 @@ from snakemake.utils import R
 if config['analysis_id'] == "ReMap2020_Human":
     configfile: "config_files/config_Hsapiens_hg38.yaml"
 elif config['analysis_id'] == "ChExMix_sacCer3":
-    configfile: "config_files/config_ChExMix_sacCer3.yaml"
+    configfile: "config_files/config_yeast_sacCer3_chexmix.yaml"
 else :
     print("; ERROR: analysis name not found. Supported: ReMap2020_Human | ChExMix_sacCer3")
 
@@ -161,21 +161,21 @@ if config['analysis_id'] == "ReMap2020_Human":
 elif config['analysis_id'] == "ChExMix_sacCer3":
 
         rule extract_peak_summits:
-        """
-        Extract peak summits: chromosome, start, end
-        """
-        input:
-            os.path.join(config["data_folder"], "{TF}", "{TF}_peaks.narrowPeak")
-        output:
-            os.path.join(config["out_dir"], "{TF}", "peak_summits", "{TF}_peak_summits.bed")
-        message:
-            "; Peak summits - TF : {wildcards.TF}"
-        priority:
-            100
-        shell:
             """
-            awk '{{ print $1"\\t"$2"\\t"$3}}' {input} > {output}
+            Extract peak summits: chromosome, start, end
             """
+            input:
+                os.path.join(config["data_folder"], "{TF}", "{TF}_peaks.narrowPeak")
+            output:
+                os.path.join(config["out_dir"], "{TF}", "peak_summits", "{TF}_peak_summits.bed")
+            message:
+                "; Peak summits - TF : {wildcards.TF}"
+            priority:
+                100
+            shell:
+                """
+                awk '{{ print $1"\\t"$2"\\t"$3}}' {input} > {output}
+                """
 
 
 ################################################################

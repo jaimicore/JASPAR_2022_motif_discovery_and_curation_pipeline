@@ -20,7 +20,7 @@ peakmotifs_disco_max_oligo : 7
 peakmotifs_class_interval : 25
 
 
-central_pvalue : -200
+central_pvalue : -100
 
 
 ## ==================================================== ##

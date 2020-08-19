@@ -49,6 +49,7 @@ rule all:
     input:
         expand(os.path.join(config["out_dir"], "{TF}", "peak-motifs", "results", "discovered_motifs", "{TF}_motifs_discovered.tf"), TF = TF_NAMES), \
         expand(os.path.join(config["out_dir"], "{TF}", "central_enrichment", "selected_motif", "{TF}.501bp.fa.sites.centrimo.best.TF_associated"), TF = TF_NAMES), \
+         os.path.join(config["curation_dir"], "Renamed_log.txt"), \
         os.path.join(config["curation_dir"], "Selected_motifs_to_curate_log10_pval_-200.pdf")
 
         
@@ -599,6 +600,39 @@ rule Select_motifs_to_curate:
         """
 
 
+rule rename_jaspar_motif_header:
+    """
+    Write the correct name to the jaspar motifs.
+
+    The motifs resulting from peak-motifs have a header that looks like this: 
+
+    >peak-motifs_m3 peak-motifs_m3
+
+    Change this header for an informative one
+
+    >CTCF CTCF 
+    """
+    input:
+        logos = MOST_ENRICHED_MOTIF_ASSOC_LOGO, 
+        exp_table = os.path.join(config["curation_dir"], "Selected_motifs_to_curate_log10_pval_-200.tab")
+    output:
+        os.path.join(config["curation_dir"], "Renamed_log.txt")
+    message:
+        "; Renaming jaspar motif header"
+    priority:
+        82
+    shell:
+        """
+        perl -lne '@sl = split(/\\t/, $_); \
+           $convert_cmd = " convert-matrix -i ".$sl[0]. " -from jaspar -to jaspar -attr id ".$sl[3]." -attr name ".$sl[3]." -return counts > ".$sl[0]."tmp" ; \
+           $rename_file = "mv ".$sl[0]."tmp ".$sl[0] ; \
+           system($convert_cmd); \
+           system($rename_file); ' {input.exp_table} ;
+
+        echo "Renamed motifs" > {output}
+        """
+
+
 rule Motifs_to_curate_PDF:
     """
     Concat the PDF of the selected motifs
@@ -610,7 +644,7 @@ rule Motifs_to_curate_PDF:
     message:
         "; Concatenating PDFs with the motifs to curate "
     priority:
-        82
+        81
     shell:
         """
         PDF_FILES=` awk -F"\t" '{{ print $21 }}' {input} | xargs `

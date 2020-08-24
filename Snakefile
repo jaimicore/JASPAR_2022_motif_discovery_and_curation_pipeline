@@ -42,6 +42,9 @@ PEAK_EXTENSIONS =  {
 ## once the previous rule is completed for all datasets
 MOST_ENRICHED_MOTIF_ASSOC_LOGO = expand(os.path.join(config["out_dir"], "{TF}", "central_enrichment", "selected_motif", "{TF}.501bp.fa.sites.centrimo.best.TF_associated.tex"), TF = TF_NAMES)
 
+## JASPAR 2020 annotation table
+## Output from rule JASPAR_annotation_table
+JASPAR_ANN_TAB = os.path.join(config["out_dir"], "Jaspar_2020_info_" + config["taxon"] + "_table.tab")
 
 ################################################################
 ## Rules
@@ -49,7 +52,8 @@ rule all:
     input:
         expand(os.path.join(config["out_dir"], "{TF}", "peak-motifs", "results", "discovered_motifs", "{TF}_motifs_discovered.tf"), TF = TF_NAMES), \
         expand(os.path.join(config["out_dir"], "{TF}", "central_enrichment", "selected_motif", "{TF}.501bp.fa.sites.centrimo.best.TF_associated"), TF = TF_NAMES), \
-         os.path.join(config["curation_dir"], "Renamed_log.txt"), \
+        JASPAR_ANN_TAB, \
+        os.path.join(config["curation_dir"], "Renamed_log.txt"), \
         os.path.join(config["curation_dir"], "Selected_motifs_to_curate_log10_pval_-200.pdf")
 
         
@@ -157,7 +161,6 @@ rule get_fasta_ENCODE_peak_files:
 rule RSAT_peakmotifs_per_exp:
     """
     Run RSAT peak-motifs (motif discovery with different algorithms) on every peakset.
-
     The set of N discovered motifs is stored in a single transfac file.
     """
     input:
@@ -214,7 +217,6 @@ rule RSAT_peakmotifs_per_exp:
 checkpoint  RSAT_PSSM_to_JASPAR_format:
     """
     Convert the RSAT discovered matrices from transfac (tf) format to JASPAR format.
-
     The transfac file is split in several files (one per motif) adding as suffix the motif number (e.g., 1,2,3,...).
     """
     input:
@@ -233,9 +235,7 @@ checkpoint  RSAT_PSSM_to_JASPAR_format:
         out_dir = os.path.join(config["out_dir"], "{TF}", "motifs", "jaspar", "pfm")
     shell:
         """
-
         mkdir -p {params.out_dir} ;
-
         {params.RSAT}/perl-scripts/convert-matrix -v 2 \
         -from tf -to jaspar \
         -i {input} \
@@ -243,7 +243,6 @@ checkpoint  RSAT_PSSM_to_JASPAR_format:
         -split \
         -prefix {params.prefix} \
         -o {params.prefix_motif} ;
-
         {params.RSAT}/perl-scripts/convert-matrix -v 2 \
         -from tf -to tab \
         -i {input} \
@@ -258,7 +257,6 @@ checkpoint  RSAT_PSSM_to_JASPAR_format:
 rule JASPAR_PSSM_to_PWM:
     """
     Convert the JASPAR PSSMs in PWMs.
-
     This rule is executed for each discovered motif.
     """
     input:
@@ -281,7 +279,6 @@ rule JASPAR_PSSM_to_PWM:
 rule Generate_matrix_logo:
     """
     Generate motif logos using RSAT convert-matrix
-
     This rule is executed for each discovered motif.
     """
     input:
@@ -314,7 +311,6 @@ rule Generate_matrix_logo:
 rule find_RSAT_matrix_sites:
     """
     Find the TFBSs used to built the matrices.
-
     This rule is executed for each discovered motif.
     """
     input:
@@ -344,7 +340,6 @@ rule find_RSAT_matrix_sites:
 rule convert_RSAT_matrix_sites_to_BED:
     """
     Get the genomic coordinates (BED file) of the matrix sites.
-
     This rule is executed for each discovered motif.
     """
     input:
@@ -366,7 +361,6 @@ rule convert_RSAT_matrix_sites_to_BED:
 rule get_RSAT_matrix_sites_fasta:
     """
     Get the fasta sequences from genomic coordinates (BED file) of the matrix sites.
-
     This rule is executed for each discovered motif.
     """
     input:
@@ -392,7 +386,6 @@ rule get_RSAT_matrix_sites_fasta:
 rule Scan_JASPAR_PWM:
     """
     Scan the PWM in the extended peaks (501bp).
-
     This rule is executed for each discovered motif.
     """
     input:
@@ -416,7 +409,6 @@ rule Scan_JASPAR_PWM:
 rule Calculate_centrimo_pvalue:
     """
     Calculate p-value for central enrichment.
-
     This rule is executed for each discovered motif.
     """
     input:
@@ -434,11 +426,8 @@ rule Calculate_centrimo_pvalue:
     shell:
         """
         mkdir -p {params.centrimo_folder} ;
-
         nb_TFBS="$(wc -l {input.sites} | cut -d ' ' -f 1)" ;
-
         nb_peaks="$(wc -l {input.peaks} | cut -d " " -f 1)" ;
-
         {params.scripts_bin}/centrimo_pval {input.sites} ${{nb_TFBS}} ${{nb_peaks}} 250 > {output}
         """
 
@@ -446,7 +435,6 @@ rule Calculate_centrimo_pvalue:
 rule generate_centrimo_plots:
     """
     Generate centrimo plots (local enrichment) around the peak summits.
-
     This rule is executed for each discovered motif.
     """
     input:
@@ -488,10 +476,33 @@ def aggregate_motif_ind(wildcards):
 ########################################################################################
 ## For each dataset, select and annotate the motif with the lowest centrality p-value ##
 ########################################################################################
+
+rule JASPAR_annotation_table:
+    """
+    Connect to JASPAR to download the annotation table of all the profiles in the current version.
+    This information is used to annotate the motifs in a semi-automatic way
+    """
+    input:
+        config["TF_Experiment_map"]
+    output:
+        JASPAR_ANN_TAB
+    message:
+        "; Generate JASPAR 2020 motif annotation table "
+    params:
+        scripts_bin = config["bin"],
+        taxon = config["taxon"],
+        out_dir = config["out_dir"]
+    priority:
+        87
+    shell:
+       """
+       Rscript {params.scripts_bin}/Retrieve_matrix_information_from_JASPAR2020.R -o {params.out_dir} -t {params.taxon}
+       """
+
+       
 rule choose_best_centrimo_experiment:
     """
     Select the motif with the best (lowest) centrimo p-value.
-
     This rule is executed for each dataset (experiment).
     """
     input:
@@ -504,7 +515,7 @@ rule choose_best_centrimo_experiment:
         scripts_bin = config["bin"],
         centrimo_dir = os.path.join(config["out_dir"], "{TF}", "central_enrichment")
     priority:
-        87
+        86
     shell:
         """
         bash {params.scripts_bin}/best_centrimo.sh -i {params.centrimo_dir} > {output}
@@ -514,7 +525,6 @@ rule choose_best_centrimo_experiment:
 rule annotate_best_centrimo_experiment:
     """
     Assign the TF name to the selected motif.
-
     This rule is executed for the best experiment of each dataset (experiment). Make sure the experiment map has the experiment ID in the first field, and the TF name in the third field
     """
     input:
@@ -527,7 +537,7 @@ rule annotate_best_centrimo_experiment:
     params:
         scripts_bin = config["bin"]
     priority:
-        86
+        85
     shell:
         """
         perl {params.scripts_bin}/annotate_best_centrimo_experiment.pl --best {input.best_exp} --map {input.tf_jaspar_map} --output {output}
@@ -540,7 +550,6 @@ rule annotate_best_centrimo_experiment:
 rule best_centrimo_experiment_logo:
     """
     Export a PDF file with the motif logo, experiment, TF name and centrality p-value.
-
     This rule is executed for the best experiment of each dataset (experiment).
     """
     input:
@@ -552,7 +561,7 @@ rule best_centrimo_experiment_logo:
     params:
         scripts_bin = config["bin"]
     priority:
-        85
+        84
     shell:
         """
         bash {params.scripts_bin}/create_latex_logos.sh -l {params.scripts_bin}/latex_header.txt -i {input} -o {output}
@@ -562,7 +571,6 @@ rule best_centrimo_experiment_logo:
 rule Concat_annotated_experiments:
     """
     Concatenate the tables with the annotated experiments and the centrality p-value
-
     """
     input:
         MOST_ENRICHED_MOTIF_ASSOC_LOGO
@@ -572,7 +580,7 @@ rule Concat_annotated_experiments:
         "; Concatenating the tables with the annotated experiments and the centrality p-value "
     params: out_dir = config["out_dir"]
     priority:
-        84
+        83
     shell:
         """
         ls {params.out_dir}/*/central_enrichment/selected_motif/*.501bp.fa.sites.centrimo.best.TF_associated | xargs cat > {output}
@@ -582,7 +590,6 @@ rule Concat_annotated_experiments:
 rule Select_motifs_to_curate:
     """
     Select those motifs satisfying the centrality p-value threshold.
-
     """
     input:
         os.path.join(config["curation_dir"], "Annotated_experiments_cat.tab")
@@ -593,23 +600,19 @@ rule Select_motifs_to_curate:
     params:
         central_pval = config["central_pvalue"]
     priority:
-        83
+        82
     shell:
         """
-        cat {input} | awk -F"\t" '{{ if ($20 <= {params.central_pval}) {{ print }} }}' | uniq > {output}
+        cat {input} | awk -F"\t" '{{ if ($16 <= {params.central_pval}) {{ print }} }}' | uniq > {output}
         """
 
 
 rule rename_jaspar_motif_header:
     """
     Write the correct name to the jaspar motifs.
-
     The motifs resulting from peak-motifs have a header that looks like this: 
-
     >peak-motifs_m3 peak-motifs_m3
-
     Change this header for an informative one
-
     >CTCF CTCF 
     """
     input:
@@ -620,7 +623,7 @@ rule rename_jaspar_motif_header:
     message:
         "; Renaming jaspar motif header"
     priority:
-        82
+        81
     shell:
         """
         perl -lne '@sl = split(/\\t/, $_); \
@@ -628,7 +631,6 @@ rule rename_jaspar_motif_header:
            $rename_file = "mv ".$sl[0]."tmp ".$sl[0] ; \
            system($convert_cmd); \
            system($rename_file); ' {input.exp_table} ;
-
         echo "Renamed motifs" > {output}
         """
 
@@ -644,10 +646,9 @@ rule Motifs_to_curate_PDF:
     message:
         "; Concatenating PDFs with the motifs to curate "
     priority:
-        81
+        80
     shell:
         """
-        PDF_FILES=` awk -F"\t" '{{ print $21 }}' {input} | xargs `
-
+        PDF_FILES=` awk -F"\t" '{{ print $20 }}' {input} | xargs `
         pdfunite $PDF_FILES {output}
         """

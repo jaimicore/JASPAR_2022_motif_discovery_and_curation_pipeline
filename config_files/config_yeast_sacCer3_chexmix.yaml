@@ -20,7 +20,8 @@ peakmotifs_disco_max_oligo : 7
 peakmotifs_class_interval : 25
 
 
-central_pvalue : -100
+## Log10(central p-value)
+central_pvalue : -50
 
 
 ## ==================================================== ##
@@ -32,3 +33,4 @@ genome_fasta : /storage/scratch/JASPAR_2022/Genome_files/Yeast/sacCer3/sacCer3.f
 genome_size : /storage/scratch/JASPAR_2022/Genome_files/Yeast/sacCer3/sacCer3.chrom.sizes
 out_dir : /storage/scratch/JASPAR_2022/ChExMix_sacCer3/results/Yeast_SacCer3
 curation_dir : /storage/scratch/JASPAR_2022/ChExMix_sacCer3/results/Yeast_SacCer3/curation
+taxon : Fungi

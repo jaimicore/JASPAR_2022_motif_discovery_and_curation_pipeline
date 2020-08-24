@@ -11,6 +11,7 @@ $0 -l <latex header file> -i <input file> -o <output file>
 """;
 
 \usepackage[export]{adjustbox}
+\usepackage{graphicx}
 
 TEMP=`getopt -o ho:i:l: -- "$@"`;
 
@@ -50,9 +51,6 @@ then
     exit 1;
 fi;
 
-#BIN=/storage/mathelierarea/processed/jamondra/Projects/JASPAR/post_processing/jaspar_2020/motif_discovery_pipeline/bin
-#cat $BIN/latex_header.txt > $output;
-#latexheader="/home/rvdlee/JASPAR/jaimicore-jaspar_2020-a8db6feb9e0e/motif_discovery_pipeline/bin/latex_header.txt";
 cat $latexheader > $output;
 
 more $input | \
@@ -60,44 +58,37 @@ while read line
 do
     tfname=$(echo $line | cut -d ' ' -f 2 | tr '_' '-');
     exp_ID=$(echo $line | cut -d ' ' -f 9 | tr '_' '-');
-    #centrimo_file=$(echo $line | cut -d ' ' -f 16);
-    centrimo_pval=$(echo $line | cut -d ' ' -f 10);
+    centrimo_pval=$(echo $line | cut -d ' ' -f 6);
     
+    ## Read motif logo
     motif_logo_original=$(echo $line | cut -d ' ' -f 8);
-    # echo "===========>  $motif_logo_original";
     motif_logo_original_dirname=$(dirname $motif_logo_original);
-    # echo "===========>  $motif_logo_original_dirname";
     # prevent error: ! LaTeX Error: Unknown graphics extension: .16_LE_WA_peak-motifs_m5_logo.png.
     # This removes any internal dots in the basename of the file, except for the dot in the extension (e.g. except the .png part)
     motif_logo_new=$(basename `echo $motif_logo_original` | perl -pe 's/(\.)(?=[^.]*\.)/\_/');
-    # echo "===========>  $motif_logo_new";
     motif_logo=${motif_logo_original_dirname}/${motif_logo_new}
-    # echo "===========>  $motif_logo";
-    # this create a symbolic link so that that new motif filename will actually exist
-    ln -s $motif_logo_original $motif_logo
 
-    motif_pdf=$(echo $line | cut -d ' ' -f 11);
-    
-    # tfname=$(echo $line | cut -f3 | tr '_' '-');
-    # exp_ID=$(echo $line | cut -f1);
-    # centrimo_file=$(echo $line | cut -f4);
-    #centrimo_pval=$(echo $line | cut -f5);
-    # motif_logo=$(echo $line | cut -f6);
-    # motif_pdf=$(echo $line | cut -f7);
+    ## Read centrality plot
+    centrimo_plot_original=$(echo $line | cut -d ' ' -f 11);
+    centrimo_plot_original_dirname=$(dirname $centrimo_plot_original);
+    # prevent error: ! LaTeX Error: Unknown graphics extension: .16_LE_WA_peak-motifs_m5_logo.png.
+    # This removes any internal dots in the basename of the file, except for the dot in the extension (e.g. except the .png part)
+    centrimo_plot_new=$(basename `echo $centrimo_plot_original` | perl -pe 's/(\.)(?=[^.]*\.)/\_/');
+    centrimo_plot=${centrimo_plot_original_dirname}/${centrimo_plot_new}
+
+    # this create a symbolic link so that that new motif filename will actually exist
+    #ln -s $motif_logo_original $motif_logo
+    #motif_pdf=$(echo $line | cut -d ' ' -f 7);
+
 
    # if (( $(echo "$centrimo_pval < 0." | bc -l) ))
     #then
-        #echo "TFname "$tfname;
-        #echo "file "$centrimo_file;
-        #echo "pval "$centrimo_pval;
     echo "\\section*{$tfname}";
     echo "\\section*{$exp_ID}";
-    echo "Centrimo p-value = $centrimo_pval \\\\";
-    #echo "Motif logo = $motif_logo \\\\";
-        # pwmdir=$(dirname $centrimo_file);
-        # echo -n "\\path{$pwmdir} \\\\";
-        # pwmname=$(basename $centrimo_file .pssm.501bp.fa.sites.centrimo);
+    echo "Centrality p-value = $centrimo_pval \\\\";
     echo "\\includegraphics{$motif_logo}";
+    echo "Centrimo plot \\\\";
+    echo "\\includegraphics[width=8cm, height=8cm]{$centrimo_plot}";
     #fi;
 done >> $output;
 echo "\\end{document}" >> $output;

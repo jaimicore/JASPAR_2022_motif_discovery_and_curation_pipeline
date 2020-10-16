@@ -16,10 +16,10 @@ csl: NAR.csl
   
 # Summary 
   
-[**JASPAR**](http://jaspar.genereg.net) [@Fornes2020] is an open-access database of curated, non-redundant 
-transcription factor (TF)-binding profiles stored as position frequency matrices 
-(PFMs) for TFs across multiple species in six taxonomic groups: Vertebrates, Plants,
-Fungi, Insects and Urochordata.
+[**JASPAR**](http://jaspar.genereg.net) [@Fornes2020] is an open-access database of curated,
+non-redundant transcription factor (TF)-binding profiles stored as position frequency
+matrices (PFMs) for TFs across multiple species in six taxonomic groups: Vertebrates,
+Plants, Fungi, Insects and Urochordata.
 
 
 For JASPAR 2022 release we curated motifs derived from the following sources:
@@ -56,7 +56,7 @@ Set the following variables in the config file:
 Assuming that you are in the *JASPAR_2022_motif_discovery_and_curation_pipeline* folder:
   
 - *bin* : bin 
-- *python* : python2.7 
+- *python* : python3.6 
 - *RSAT* : /lsc/rsat
 
 You can see where RSAT program are using the following command: ```echo $RSAT```
@@ -342,6 +342,64 @@ These motifs were directly taken from the *RSAT* website, in the [**motif databa
 ## Pre-processing of human TF dimer SELEX motifs
 
 These motifs were directly taken from the *RSAT* website, in the [**motif databases**](http://rsat-tagc.univ-mrs.fr/rsat/motif_databases/Jolma_2015/) section.
+
+
+# After manually curation
+
+
+## Trim low-informative positions
+
+Once the motifs were manually curated, in many cases is useful to trim non-informative
+positions, we provide a script to manually trim the positions.
+
+Required software:
+
+- R packages:
+  - universalmotif
+  - optparse
+  
+Supported motif formats:
+
+  - jaspar
+
+
+Other motifs formats will be added if they are required in the pipeline.
+
+
+Parameters:
+
+```unix
+  -m : (--input_motif)       Path to input motif file. (Mandatory)
+  -n : (--format)            Input motif format. (Mandatory)
+  -o : (--output_directory)  Output directory to export the trimmed motifs. If not indicated, the trimmed motifs are exported in the same folder with the extension *.trimmed*
+  -b : (--both)              Trim b nucleotides in both sides 
+  -l : (--left)              Trim l nucleotides in left side
+  -r : (--right)             Trim r nucleotides in right side
+  -f : (--from)              Keep nucleotides starting from f position 
+  -t : (--to)                Keep nucleotides until t position 
+```
+
+Example:
+```unix
+Rscript bin/Motif_Friseur.R         \
+  -m Doc/ZNF506.jaspar              \
+  -n jaspar                         \
+  -o examples/results/Motif_friseur \
+  -f 4                              \
+  -t 12
+```
+
+Trimming the ZNF506 motif from [JASPAR](http://jaspar.genereg.net/matrix/UN0198.1/),
+the trimmed motif contains the columns 4 to 12.
+
+
+# Contact
+
+Any questions related to this pipeline, please contact the following persons:
+
+  - [Jaime A Castro-Mondragon](https://jaimicore.github.io/) : j.a.c.mondragon@ncmm.uio.no
+  - [Anthony Mathelier](https://mathelierlab.com/)           : anthony.mathelier@ncmm.uio.no
+
 
 
 \pagebreak

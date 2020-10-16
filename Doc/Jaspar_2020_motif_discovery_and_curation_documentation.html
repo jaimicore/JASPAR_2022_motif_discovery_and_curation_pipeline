@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="generator" content="pandoc" />
+
+        <meta name="author" content="Jaime A Castro-Mondragon" />
+    
+    
+    <title>JASPAR 2022 motif discovery pipeline and motif annotation</title>
+
+        <script src="Jaspar_2020_motif_discovery_and_curation_documentation_files/jquery-1.11.3/jquery.min.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link href="Jaspar_2020_motif_discovery_and_curation_documentation_files/bootstrap-3.3.7/css/bootstrap.min.css" rel="stylesheet" />
+    <script src="Jaspar_2020_motif_discovery_and_curation_documentation_files/bootstrap-3.3.7/js/bootstrap.min.js"></script>
+    <script src="Jaspar_2020_motif_discovery_and_curation_documentation_files/jqueryui-1.11.4/jquery-ui.min.js"></script>
+    <script src="Jaspar_2020_motif_discovery_and_curation_documentation_files/navigation-1.1/tabsets.js"></script>
+    <link href="Jaspar_2020_motif_discovery_and_curation_documentation_files/magnific-popup-1.1.0/magnific-popup.css" rel="stylesheet" />
+    <script src="Jaspar_2020_motif_discovery_and_curation_documentation_files/magnific-popup-1.1.0/jquery.magnific-popup.min.js"></script>
+    <link href="Jaspar_2020_motif_discovery_and_curation_documentation_files/readthedown-0.1/readthedown.css" rel="stylesheet" />
+    <link href="Jaspar_2020_motif_discovery_and_curation_documentation_files/readthedown-0.1/readthedown_fonts.css" rel="stylesheet" />
+    <script src="Jaspar_2020_motif_discovery_and_curation_documentation_files/readthedown-0.1/readthedown.js"></script>
+    <script src="Jaspar_2020_motif_discovery_and_curation_documentation_files/accessible-code-block-0.0.1/empty-anchor.js"></script>
+    
+    
+        <style type="text/css">code{white-space: pre;}</style>
+    <style type="text/css">
+      code.sourceCode > span { display: inline-block; line-height: 1.25; }
+      code.sourceCode > span { color: inherit; text-decoration: inherit; }
+      code.sourceCode > span:empty { height: 1.2em; }
+      .sourceCode { overflow: visible; }
+      code.sourceCode { white-space: pre; position: relative; }
+      div.sourceCode { margin: 1em 0; }
+      pre.sourceCode { margin: 0; }
+      @media screen {
+      div.sourceCode { overflow: auto; }
+      }
+      @media print {
+      code.sourceCode { white-space: pre-wrap; }
+      code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+      }
+      pre.numberSource code
+        { counter-reset: source-line 0; }
+      pre.numberSource code > span
+        { position: relative; left: -4em; counter-increment: source-line; }
+      pre.numberSource code > span > a:first-child::before
+        { content: counter(source-line);
+          position: relative; left: -1em; text-align: right; vertical-align: baseline;
+          border: none; display: inline-block;
+          -webkit-touch-callout: none; -webkit-user-select: none;
+          -khtml-user-select: none; -moz-user-select: none;
+          -ms-user-select: none; user-select: none;
+          padding: 0 4px; width: 4em;
+          color: #aaaaaa;
+        }
+      pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+      div.sourceCode
+        {  background-color: #f8f8f8; }
+      @media screen {
+      code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+      }
+      code span.al { color: #ef2929; } /* Alert */
+      code span.an { color: #8f5902; font-weight: bold; font-style: italic; } /* Annotation */
+      code span.at { color: #c4a000; } /* Attribute */
+      code span.bn { color: #0000cf; } /* BaseN */
+      code span.cf { color: #204a87; font-weight: bold; } /* ControlFlow */
+      code span.ch { color: #4e9a06; } /* Char */
+      code span.cn { color: #000000; } /* Constant */
+      code span.co { color: #8f5902; font-style: italic; } /* Comment */
+      code span.cv { color: #8f5902; font-weight: bold; font-style: italic; } /* CommentVar */
+      code span.do { color: #8f5902; font-weight: bold; font-style: italic; } /* Documentation */
+      code span.dt { color: #204a87; } /* DataType */
+      code span.dv { color: #0000cf; } /* DecVal */
+      code span.er { color: #a40000; font-weight: bold; } /* Error */
+      code span.ex { } /* Extension */
+      code span.fl { color: #0000cf; } /* Float */
+      code span.fu { color: #000000; } /* Function */
+      code span.im { } /* Import */
+      code span.in { color: #8f5902; font-weight: bold; font-style: italic; } /* Information */
+      code span.kw { color: #204a87; font-weight: bold; } /* Keyword */
+      code span.op { color: #ce5c00; font-weight: bold; } /* Operator */
+      code span.ot { color: #8f5902; } /* Other */
+      code span.pp { color: #8f5902; font-style: italic; } /* Preprocessor */
+      code span.sc { color: #000000; } /* SpecialChar */
+      code span.ss { color: #4e9a06; } /* SpecialString */
+      code span.st { color: #4e9a06; } /* String */
+      code span.va { color: #000000; } /* Variable */
+      code span.vs { color: #4e9a06; } /* VerbatimString */
+      code span.wa { color: #8f5902; font-weight: bold; font-style: italic; } /* Warning */
+    </style>
+    
+    
+    <!-- tabsets -->
+    <script>
+      $(document).ready(function () {
+	  window.buildTabsets("toc");
+      });
+      $(document).ready(function () {
+	  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+	      $(this).parent().toggleClass('nav-tabs-open')
+	  });
+      });
+    </script>
+
+    <!-- code folding -->
+    
+    <!-- code download -->
+    
+    <!-- tabsets dropdown -->
+
+    <style type="text/css">
+      .tabset-dropdown > .nav-tabs {
+	  display: inline-table;
+	  max-height: 500px;
+	  min-height: 44px;
+	  overflow-y: auto;
+	  background: white;
+	  border: 1px solid #ddd;
+	  border-radius: 4px;
+      }
+      
+      .tabset-dropdown > .nav-tabs > li.active:before {
+	  content: "";
+	  font-family: 'Glyphicons Halflings';
+	  display: inline-block;
+	  padding: 10px;
+	  border-right: 1px solid #ddd;
+      }
+      
+      .tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+	  content: "&#xe258;";
+	  border: none;
+      }
+      
+      .tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+	  content: "";
+	  font-family: 'Glyphicons Halflings';
+	  display: inline-block;
+	  padding: 10px;
+	  border-right: 1px solid #ddd;
+      }
+      
+      .tabset-dropdown > .nav-tabs > li.active {
+	  display: block;
+      }
+
+      .tabset-dropdown > .nav-tabs > li.active a {
+  	  padding: 0 15px !important;
+      }
+
+      .tabset-dropdown > .nav-tabs > li > a,
+      .tabset-dropdown > .nav-tabs > li > a:focus,
+      .tabset-dropdown > .nav-tabs > li > a:hover {
+	  border: none;
+	  display: inline-block;
+	  border-radius: 4px;
+	  background-color: transparent;
+      }
+      
+      .tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+	  display: block;
+	  float: none;
+      }
+      
+      .tabset-dropdown > .nav-tabs > li {
+	  display: none;
+	  margin-left: 0 !important;
+      }
+    </style>
+    
+</head>
+
+<body>
+
+            <!-- readthedown start -->   
+   <div id="content" data-toggle="wy-nav-shift">
+     <nav id="nav-top" role="navigation" aria-label="top navigation">
+       <a role="button" href="#" data-toggle="wy-nav-top"><span class="glyphicon glyphicon-menu-hamburger"></span></a>
+     </nav>
+   
+     
+        
+      <h1 class="title">JASPAR 2022 motif discovery pipeline and motif annotation</h1>
+      
+      <!-- readthedown authors -->
+   <div id="sidebar">
+    <h2><a href="#content">JASPAR 2022 motif discovery pipeline and motif annotation</a></h2>
+    <div id="toc">
+      <ul>
+      <li><a href="#summary">Summary</a></li>
+      <li><a href="#motif-discovery-pipeline">Motif discovery pipeline</a><ul>
+      <li><a href="#software-required">Software required</a></li>
+      <li><a href="#configuration-file">Configuration file</a></li>
+      <li><a href="#dowload-genomes-and-chromosome-size-file">Dowload genomes and chromosome size file</a></li>
+      <li><a href="#launching-the-pipeline">Launching the pipeline</a></li>
+      <li><a href="#troubleshooting">Troubleshooting</a></li>
+      <li><a href="#memory-requirements">Memory requirements</a></li>
+      </ul></li>
+      <li><a href="#collecting-and-preparing-peaks-datasets">Collecting and preparing peaks datasets</a><ul>
+      <li><a href="#collecting-and-preparing-chip-exo-peaks-derived-from-chexmix-in-yeast-saccer3">Collecting and preparing ChIP-exo peaks derived from ChExMix in yeast (sacCer3)</a></li>
+      </ul></li>
+      <li><a href="#collecting-and-preparing-motifs-for-curation">Collecting and preparing motifs for curation</a><ul>
+      <li><a href="#pre-processing-of-human-zinc-finger-motifs-from-dogan-2020">Pre-processing of human zinc finger motifs from Dogan 2020</a></li>
+      <li><a href="#pre-processing-of-ciona-robusta-motifs-derived-from-selex">Pre-processing of <em>Ciona robusta</em> motifs derived from SELEX</a></li>
+      <li><a href="#pre-processing-of-cap-and-ncap-selex-motifs">Pre-processing of CAP and NCAP SELEX motifs</a></li>
+      <li><a href="#pre-processing-of-human-tf-dimer-selex-motifs">Pre-processing of human TF dimer SELEX motifs</a></li>
+      </ul></li>
+      <li><a href="#after-manually-curation">After manually curation</a><ul>
+      <li><a href="#trim-low-informative-positions">Trim low-informative positions</a></li>
+      </ul></li>
+      <li><a href="#contact">Contact</a></li>
+      <li><a href="#references">References</a></li>
+      </ul>
+    </div>
+    <div id="postamble" data-toggle="wy-nav-shift" class="status">
+                  <p class="author"><span class="glyphicon glyphicon-user"></span> Jaime A Castro-Mondragon</p>
+                        <p class="date"><span class="glyphicon glyphicon-calendar"></span> Last Update: 2020-10-16</p>
+          </div>
+   </div>
+   
+   
+   
+   
+   
+<div id="main">
+<div id="summary" class="section level1">
+<h1>Summary</h1>
+<p><a href="http://jaspar.genereg.net"><strong>JASPAR</strong></a> <span class="citation">(1)</span> is an open-access database of curated, non-redundant transcription factor (TF)-binding profiles stored as position frequency matrices (PFMs) for TFs across multiple species in six taxonomic groups: Vertebrates, Plants, Fungi, Insects and Urochordata.</p>
+<p>For JASPAR 2022 release we curated motifs derived from the following sources:</p>
+<ul>
+<li>Human TF dimers motifs derived from SELEX <span class="citation">(2)</span></li>
+<li>Human TF motifs detected by SELEX in free DNA <span class="citation">(3)</span></li>
+<li>Human TF motifs detected by SELEX in nucleosomal DNA <span class="citation">(3)</span></li>
+<li>Human Zinc finger TF motifs derived from ChIP-seq <span class="citation">(4)</span></li>
+<li>Human Zinc finger TF motifs derived from ChIP-exo <span class="citation">(4)</span></li>
+<li><em>Ciona robusta</em> motifs derived from SELEX <span class="citation">(5)</span></li>
+<li>Yeast motifs derived from ChIP-exo <span class="citation">(6)</span> <!-- - *Cnidaria* motifs derived from ATAC-seq [@Hettinger2018] --></li>
+</ul>
+</div>
+<div id="motif-discovery-pipeline" class="section level1">
+<h1>Motif discovery pipeline</h1>
+<div id="software-required" class="section level2">
+<h2>Software required</h2>
+<ul>
+<li>Regulatory sequences analysis tools <a href="http://rsat-tagc.univ-mrs.fr/rsat/"><strong>RSAT</strong></a> <span class="citation">(7)</span></li>
+<li><a href="https://www.r-project.org/"><strong>R</strong></a> &gt;= 3.6</li>
+<li>Perl TFBS modules: <a href="http://tfbs.genereg.net/" class="uri">http://tfbs.genereg.net/</a></li>
+<li><em>snakemake</em>: <a href="https://snakemake.readthedocs.io/en/stable/index.html" class="uri">https://snakemake.readthedocs.io/en/stable/index.html</a></li>
+<li>pdfunite</li>
+</ul>
+</div>
+<div id="configuration-file" class="section level2">
+<h2>Configuration file</h2>
+<p>Set the following variables in the config file:</p>
+<div id="software-variables" class="section level3">
+<h3>Software variables</h3>
+<p>Assuming that you are in the <em>JASPAR_2022_motif_discovery_and_curation_pipeline</em> folder:</p>
+<ul>
+<li><em>bin</em> : bin</li>
+<li><em>python</em> : python3.6</li>
+<li><em>RSAT</em> : /lsc/rsat</li>
+</ul>
+<p>You can see where RSAT program are using the following command: <code>echo $RSAT</code></p>
+</div>
+<div id="organism-specific-variables" class="section level3">
+<h3>Organism specific variables</h3>
+<ul>
+<li>data_folder : This is the folder where the input file provided as <em>narrowPeak</em> must be placed. See <em>Expected folder structure</em> for more information about the folder and file names.</li>
+<li>genome_fasta: The path to the <em>.fa</em> file with the organism’s genome sequence.</li>
+<li>genome_size: the path to the <em>.chrom.sizes</em> file.</li>
+<li>TF_Experiment_map: The path to the experiment table. The pipeline expects at least three columns in the following order: 1) Experiment ID, 2) Condition/Cell-type, and 3) TF.</li>
+<li>out_dir: The path to results folder where all the analysis will be stored, one folder per experiment. Don’t forget to indicate the genome in the path. Example: <code>ReMap2020/Hs_hg38</code></li>
+</ul>
+</div>
+</div>
+<div id="dowload-genomes-and-chromosome-size-file" class="section level2">
+<h2>Dowload genomes and chromosome size file</h2>
+<div id="saccer3-ucsc" class="section level3">
+<h3>sacCer3 (UCSC)</h3>
+<p>Download genome from UCSC through command-line:</p>
+<pre><code>## Download the twoBitToFa tool for format conversion
+## It is not necessary to download twoBitToFa every time you download a genome
+wget http://hgdownload.cse.ucsc.edu/admin/exe/linux.x86_64/twoBitToFa 
+chmod +x twoBitToFa
+
+## Download chromosome sizes file
+wget http://hgdownload.cse.ucsc.edu/goldenPath/sacCer3/bigZips/sacCer3.chrom.sizes
+
+## Download the 2bit version of sacCer3 genome
+wget http://hgdownload.cse.ucsc.edu/goldenPath/sacCer3/bigZips/sacCer3.2bit
+
+## Get the fasta file
+./twoBitToFa sacCer3.2bit sacCer3.fa</code></pre>
+<p>Once the <em>.fa</em> and <em>.chrom.sizes</em> were downloaded, set the <em>genome_fasta</em> and <em>genome_size</em> variables in the corresponding <em>config.yaml</em> file</p>
+</div>
+</div>
+<div id="launching-the-pipeline" class="section level2">
+<h2>Launching the pipeline</h2>
+<div id="expected-folder-structure" class="section level3">
+<h3>Expected folder structure</h3>
+<p>The Snakefile will launch a motif analysis + centrality enrichment test for each discovered motif of each dataset (experiment). To launch the pipeline we only required a <em>narrowPeak</em> file that must be located in the ‘data_folder’ specified in the config file (see <em>configuration file</em> section).</p>
+<p>Example:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1"></a><span class="bu">cd</span> data_folder</span>
+<span id="cb2-2"><a href="#cb2-2"></a></span>
+<span id="cb2-3"><a href="#cb2-3"></a><span class="ex">.</span></span>
+<span id="cb2-4"><a href="#cb2-4"></a>├── <span class="ex">ENCSR000BST_GATA3_MCF-7</span></span>
+<span id="cb2-5"><a href="#cb2-5"></a>│   └── <span class="ex">ENCSR000BST_GATA3_MCF-7_peaks.narrowPeak</span></span>
+<span id="cb2-6"><a href="#cb2-6"></a>└── <span class="ex">ENCSR000ATT_FOXA1_MCF-7</span></span>
+<span id="cb2-7"><a href="#cb2-7"></a>  └── <span class="ex">ENCSR000ATT_FOXA1_MCF-7_peaks.narrowPeak</span></span></code></pre></div>
+<p>Every EXPERIMENT_FOLDER in the data folder must contain a narrowPeak file with the same name and the suffix <em>_peaks</em>, see tree above. Example:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1"></a><span class="ex">EXPERIMENT_FOLDER</span> = ENCSR000BST_GATA3_MCF-7</span>
+<span id="cb3-2"><a href="#cb3-2"></a><span class="ex">narrowPeak</span>        = ENCSR000BST_GATA3_MCF-7_peaks.narrowPeak</span></code></pre></div>
+<p>This is the data structure required by the pipeline.</p>
+</div>
+<div id="launching-the-snakemake-workflow" class="section level3">
+<h3>Launching the <em>snakemake</em> workflow</h3>
+<p>There are two main task/steps in this pipeline:</p>
+<ul>
+<li>Step 1: motif discovery. The program <em>RSAT peak-motifs</em> <span class="citation">(8)</span> is called, this program runs four motif discovery algorithms (over-represented k-mers, over-represented spaced-k-mers, positionally biased k-mers, k-mers enriched in central windows) to discover significant motifs on each set of ChIP-seq peaks. This can be launched by running the <em>Snakefile</em>, you can parallelize the process using the argument <em>–cores</em>.</li>
+</ul>
+<p>The <em>Snakefile</em> contain a series of rules, for the motif discovery steps, it searches for datasets in <em>narrowPeak</em> format.</p>
+<ul>
+<li>Step 2: selecting centrally enriched motifs. Note that given the ChIP-seq dataset quality and the number of peaks may vary among the datasets, many datasets may not produce any significant motif. A priori, the number of discovered motifs is unknown, so we use <em>checkpoints</em> within the <em>Snakefile</em>.</li>
+</ul>
+</div>
+<div id="selecting-config-file" class="section level3">
+<h3>Selecting config file</h3>
+<p>This pipeline is generic for any narrowPeak file. In order to use a single pipeline for data coming in multiple input format, we use multiple configuration files (folder <em>config_files</em>) containing the configuration files for multiple organisms and multiple ChIP-seq repositories (e.g., ReMap <span class="citation">(9)</span>, GTRD <span class="citation">(10)</span>, ChIP-atlas <span class="citation">(11)</span>, CistromeDB <span class="citation">(12)</span>).</p>
+<p>In order to run the pipeline, users must enter one of the following analysis IDs:</p>
+<ul>
+<li><strong>ReMap 2020 Homo sapiens hg38</strong> : ReMap2020_Human</li>
+<li><strong>ChIP-exo S cerevisiae peaks from ChExMix</strong> : ChExMix_sacCer3</li>
+</ul>
+<div class="sourceCode" id="cb4"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1"></a><span class="ex">snakemake</span> --config analysis_id=ReMap2022_Human [--cores X]</span></code></pre></div>
+<p>All the <em>snakemake</em> rules in the pipeline, except the first one (<em>extract_peak_summits</em>) are the same. The reason is because the input genomic coordinates could vary across the source and may require to parse the table.</p>
+<p>In the previous chunk, the argument <em>–config analysis_id=ReMap2022_Human</em> indicates to the pipeline to use the config file for ReMap 2020 Homo sapiens hg38, and run its respective <em>extract_peak_summits</em> rule.</p>
+</div>
+</div>
+<div id="troubleshooting" class="section level2">
+<h2>Troubleshooting</h2>
+<div id="rule-rsat_peakmotifs_per_exp" class="section level3">
+<h3>rule RSAT_peakmotifs_per_exp</h3>
+<ul>
+<li><p><em>RSAT peak-motifs</em> none motif found: verify that the input <em>NarrowPeak</em> is not empty.</p></li>
+<li><p><em>RSAT local-word-analysis</em> python version: this program is written in python and called within RSAT peak-motifs. In case that the default python environment is 3.5, local-word-analysis will not run, therefore the solution is modify directly the line in the $RSAT/perl-scripts/peak-motifs script adding “python2.7” before the program is called.</p></li>
+<li><p><em>RSAT position-analysis</em> founds highly repetitive/uninformative motifs: The default interval for position-analysis is 50nt, which is too large for the JASPAR pipeline (where the peaks have a size of 101), this may produce non-relevant artifact motifs. By changing the interval to 25 the program may found the expected TF motif. Note that this change was already set in the config file.</p></li>
+</ul>
+</div>
+<div id="rule-annotate_best_centrimo_experiment" class="section level3">
+<h3>rule annotate_best_centrimo_experiment</h3>
+<ul>
+<li>Verify that the variables in the <em>awk</em> command correspond to the correct fields in your experiment table.</li>
+</ul>
+</div>
+<div id="rule-best_centrimo_experiment_logo" class="section level3">
+<h3>rule best_centrimo_experiment_logo</h3>
+<ul>
+<li>Input files not found: this may occur when the Experiment_TF ID contains certain characters as: <em>(</em>, <em>)</em>, <em>[<em>, </em>]</em>, <em>.</em>, <em>/</em>, " "(one or more spaces). Before launching the pipeline, verify that none of the folders in your data folder contains such characters, the simplest option is remove them or substitute them by ‘<em>-</em>’.</li>
+</ul>
+</div>
+</div>
+<div id="memory-requirements" class="section level2">
+<h2>Memory requirements</h2>
+<p>If you launch the <em>Snakefile</em> using multiple cores (See <em>Launching the </em>snakemake* workflow* section), each core will use ~1GB of memory in your computer.</p>
+</div>
+</div>
+<div id="collecting-and-preparing-peaks-datasets" class="section level1">
+<h1>Collecting and preparing peaks datasets</h1>
+<div id="collecting-and-preparing-chip-exo-peaks-derived-from-chexmix-in-yeast-saccer3" class="section level2">
+<h2>Collecting and preparing ChIP-exo peaks derived from ChExMix in yeast (sacCer3)</h2>
+<p>ChIP-exo datasets were kindly provided by <a href="http://mahonylab.org/"><strong>Shaun Mahony</strong></a> derived from the ChExMix peak-caller <span class="citation">(6)</span>.</p>
+<p>The ChIP-exo peaks were parsed to the required format using the following script:</p>
+<p>Command:</p>
+<ul>
+<li><em>peaks_in_folder</em> : directory containing the ChExMix peaks</li>
+<li><em>peaks_out_folder</em> : directory that will containg the parsed ChExMix peaks</li>
+<li><em>suffix</em> : suffix for the putput files (*_peaks.narrowPeak*)</li>
+</ul>
+<div class="sourceCode" id="cb5"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1"></a></span>
+<span id="cb5-2"><a href="#cb5-2"></a><span class="co">## For ChIP-seq derived motifs</span></span>
+<span id="cb5-3"><a href="#cb5-3"></a><span class="ex">Rscript</span> ChExMix_sacCer3/pre-process_scripts/Preprocess_chexmix_peaks.R \</span>
+<span id="cb5-4"><a href="#cb5-4"></a>--peaks_in_folder ChExMix_sacCer3/data/yep-peaks/ \</span>
+<span id="cb5-5"><a href="#cb5-5"></a>--peaks_out_folder ChExMix_sacCer3/data/Yeast_SacCer3 \</span>
+<span id="cb5-6"><a href="#cb5-6"></a>--suffix <span class="st">&#39;_peaks.narrowPeak&#39;</span></span></code></pre></div>
+<p>This script will pre-process the ChExMix peaks in the format required by this pipeline and will also produce the <strong>TF - Experiment ID table</strong> that is required by this pipeline to annotate the motifs.</p>
+<p>Required software:</p>
+<ul>
+<li>R packages:
+<ul>
+<li>data.table</li>
+<li>dplyr</li>
+<li>optparse</li>
+</ul></li>
+</ul>
+</div>
+</div>
+<div id="collecting-and-preparing-motifs-for-curation" class="section level1">
+<h1>Collecting and preparing motifs for curation</h1>
+<div id="pre-processing-of-human-zinc-finger-motifs-from-dogan-2020" class="section level2">
+<h2>Pre-processing of human zinc finger motifs from Dogan 2020</h2>
+<p>The <a href="https://www.biorxiv.org/content/biorxiv/early/2020/06/16/630756/DC9/embed/media-9.zip?download=true"><strong>ChIP-seq</strong></a> and <a href="https://www.biorxiv.org/content/biorxiv/early/2020/06/16/630756/DC10/embed/media-10.zip?download=true"><strong>ChIP-exo</strong></a> motif libraries were downloaded from the <a href="https://www.biorxiv.org/content/10.1101/630756v4.supplementary-material"><strong>supplementary material</strong></a> from <span class="citation">(4)</span>.</p>
+<p>Each motif comes in a separated file in <em>cis-bp</em> motif format. The file name corresponds to their uniprot ID.</p>
+<p>Run the following command to map the correct TF name from the uniprot ID and convert the motifs from <em>cis-bp</em> to <em>transfac</em> format, the latter allows to add annotations and comments to the motifs.</p>
+<p>Download and unzip the each zip file in a separated folder.</p>
+<p>Command:</p>
+<ul>
+<li><em>motif_folder</em> : directory containing the <em>cis-bp</em> motifs</li>
+<li><em>logo_folder</em> : directory where the logos will be stored</li>
+<li><em>motif_source</em> : prefix for naming the result <em>transfac</em> file containing all the motifs</li>
+</ul>
+<div class="sourceCode" id="cb6"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1"></a></span>
+<span id="cb6-2"><a href="#cb6-2"></a><span class="co">## For ChIP-seq derived motifs</span></span>
+<span id="cb6-3"><a href="#cb6-3"></a><span class="ex">Rscript</span> Zinc_Fingers_C2H2_Dogan_2020/pre-process/Rename_C2H2_motifs.R \</span>
+<span id="cb6-4"><a href="#cb6-4"></a>--motif_folder Zinc_Fingers_C2H2_Dogan_2020/data/Zinc_fingers_C2H2_ChIP-seq \</span>
+<span id="cb6-5"><a href="#cb6-5"></a>--logo_folder Zinc_Fingers_C2H2_Dogan_2020/data/Zinc_fingers_C2H2_ChIP-seq/Logos \</span>
+<span id="cb6-6"><a href="#cb6-6"></a>--motif_source ChIP-seq</span>
+<span id="cb6-7"><a href="#cb6-7"></a></span>
+<span id="cb6-8"><a href="#cb6-8"></a></span>
+<span id="cb6-9"><a href="#cb6-9"></a><span class="co">## For ChIP-exo derived motifs</span></span>
+<span id="cb6-10"><a href="#cb6-10"></a><span class="ex">Rscript</span> Zinc_Fingers_C2H2_Dogan_2020/pre-process/Rename_C2H2_motifs.R \</span>
+<span id="cb6-11"><a href="#cb6-11"></a>--motif_folder Zinc_Fingers_C2H2_Dogan_2020/data/Zinc_fingers_C2H2_ChIP-exo \</span>
+<span id="cb6-12"><a href="#cb6-12"></a>--logo_folder Zinc_Fingers_C2H2_Dogan_2020/data/Zinc_fingers_C2H2_ChIP-exo/Logos \</span>
+<span id="cb6-13"><a href="#cb6-13"></a>--motif_source ChIP-exo</span></code></pre></div>
+<p>Required software:</p>
+<ul>
+<li>RSAT</li>
+<li>R packages:
+<ul>
+<li>data.table</li>
+<li>dplyr</li>
+<li>optparse</li>
+<li>UniprotR</li>
+</ul></li>
+</ul>
+</div>
+<div id="pre-processing-of-ciona-robusta-motifs-derived-from-selex" class="section level2">
+<h2>Pre-processing of <em>Ciona robusta</em> motifs derived from SELEX</h2>
+<p>The motifs were downloaded from the <a href="https://www.aniseed.cnrs.fr/aniseed/"><strong>Aniseed</strong></a> database, in the <a href="https://www.aniseed.cnrs.fr/aniseed/download/download_data"><strong>download section</strong></a>.</p>
+<p>Download the following files:</p>
+<ul>
+<li><em>Selex seq section (SELEX-seq best round 6-mer enrichments 4.5 MB)</em></li>
+<li><em>SELEX-seq table S1-S3, Nitta et al. 2019 2.7 MB</em></li>
+</ul>
+<p>The first file contains the best PFM of each TF. The second file contains the annotation of the TFs (IDs, name, family, interprot ID), we extracted the first sheet and removed the first 2 lines.</p>
+<p>Command:</p>
+<ul>
+<li><em>input.motif.folder</em> : directory containing the <em>Aniseed</em> motifs</li>
+<li><em>output.motif.folder</em> : directory where the logos and pfms will be stored</li>
+<li><em>annotation.table</em> : <em>Aniseed</em> annotation table</li>
+<li><em>organism</em> : Ciona_robusta (suffix to name output files)</li>
+</ul>
+<div class="sourceCode" id="cb7"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1"></a></span>
+<span id="cb7-2"><a href="#cb7-2"></a><span class="co">## For Aniseed (Ciona robusta) SELEX motifs</span></span>
+<span id="cb7-3"><a href="#cb7-3"></a><span class="ex">Rscript</span> Aniseed/pre-process_scripts/Rename_Aniseed_motifs.R \</span>
+<span id="cb7-4"><a href="#cb7-4"></a>--input.motif.folder Aniseed/data/Best_round/pfm_best_round \</span>
+<span id="cb7-5"><a href="#cb7-5"></a>--output.motif.folder Aniseed/data/Best_round \</span>
+<span id="cb7-6"><a href="#cb7-6"></a>--annotation.table Aniseed/data/Best_round/SELEX_project_TableS1_S3_Nitta_et_al_2019.csv \</span>
+<span id="cb7-7"><a href="#cb7-7"></a>--organism ChIP-Ciona_robusta</span></code></pre></div>
+<p>Required software:</p>
+<ul>
+<li>RSAT</li>
+<li>R packages:
+<ul>
+<li>data.table</li>
+<li>dplyr</li>
+<li>optparse</li>
+</ul></li>
+</ul>
+</div>
+<div id="pre-processing-of-cap-and-ncap-selex-motifs" class="section level2">
+<h2>Pre-processing of CAP and NCAP SELEX motifs</h2>
+<p>These motifs were directly taken from the <em>RSAT</em> website, in the <a href="http://rsat-tagc.univ-mrs.fr/rsat/motif_databases/NCAP-SELEX/"><strong>motif databases</strong></a> section.</p>
+</div>
+<div id="pre-processing-of-human-tf-dimer-selex-motifs" class="section level2">
+<h2>Pre-processing of human TF dimer SELEX motifs</h2>
+<p>These motifs were directly taken from the <em>RSAT</em> website, in the <a href="http://rsat-tagc.univ-mrs.fr/rsat/motif_databases/Jolma_2015/"><strong>motif databases</strong></a> section.</p>
+</div>
+</div>
+<div id="after-manually-curation" class="section level1">
+<h1>After manually curation</h1>
+<div id="trim-low-informative-positions" class="section level2">
+<h2>Trim low-informative positions</h2>
+<p>Once the motifs were manually curated, in many cases is useful to trim non-informative positions, we provide a script to manually trim the positions.</p>
+<p>Required software:</p>
+<ul>
+<li>R packages:
+<ul>
+<li>universalmotif</li>
+<li>optparse</li>
+</ul></li>
+</ul>
+<p>Supported motif formats:</p>
+<ul>
+<li>jaspar</li>
+</ul>
+<p>Other motifs formats will be added if they are required in the pipeline.</p>
+<p>Parameters:</p>
+<pre class="unix"><code>  -m : (--input_motif)       Path to input motif file. (Mandatory)
+  -n : (--format)            Input motif format. (Mandatory)
+  -o : (--output_directory)  Output directory to export the trimmed motifs. If not indicated, the trimmed motifs are exported in the same folder with the extension *.trimmed*
+  -b : (--both)              Trim b nucleotides in both sides 
+  -l : (--left)              Trim l nucleotides in left side
+  -r : (--right)             Trim r nucleotides in right side
+  -f : (--from)              Keep nucleotides starting from f position 
+  -t : (--to)                Keep nucleotides until t position </code></pre>
+<p>Example:</p>
+<pre class="unix"><code>Rscript bin/Motif_Friseur.R         \
+  -m Doc/ZNF506.jaspar              \
+  -n jaspar                         \
+  -o examples/results/Motif_friseur \
+  -f 4                              \
+  -t 12</code></pre>
+<p>Trimming the ZNF506 motif from <a href="http://jaspar.genereg.net/matrix/UN0198.1/">JASPAR</a>, the trimmed motif contains the columns 4 to 12.</p>
+</div>
+</div>
+<div id="contact" class="section level1">
+<h1>Contact</h1>
+<p>Any questions related to this pipeline, please contact the following persons:</p>
+<ul>
+<li><a href="https://jaimicore.github.io/">Jaime A Castro-Mondragon</a> : <a href="mailto:j.a.c.mondragon@ncmm.uio.no" class="email">j.a.c.mondragon@ncmm.uio.no</a></li>
+<li><a href="https://mathelierlab.com/">Anthony Mathelier</a> : <a href="mailto:anthony.mathelier@ncmm.uio.no" class="email">anthony.mathelier@ncmm.uio.no</a></li>
+</ul>
+<div style="page-break-after: always;"></div>
+</div>
+<div id="references" class="section level1 unnumbered">
+<h1>References</h1>
+<div id="refs" class="references">
+<div id="ref-Fornes2020">
+<p>1. Fornes,O., Castro-mondragon,J.A., Khan,A., Lee,R.V.D., Zhang,X., Richmond,P.A., Modi,B.P., Correard,S., Gheorghe,M. and Santana-garcia,W. <em>et al.</em> (2020) JASPAR 2020 : update of the open-access database of transcription factor binding profiles ˇ c. <strong>48</strong>, 87–92.</p>
+</div>
+<div id="ref-Jolma2015">
+<p>2. Jolma,A., Yin,Y., Nitta,K.R., Dave,K., Popov,A., Taipale,M., Enge,M., Kivioja,T., Morgunova,E. and Taipale,J. (2015) DNA-dependent formation of transcription factor pairs alters their binding specificity. <em>Nature</em>, <strong>527</strong>, 384–8.</p>
+</div>
+<div id="ref-Zhu2018">
+<p>3. Zhu,F., Farnung,L., Kaasinen,E., Sahu,B., Yin,Y., Wei,B., Dodonova,S.O., Nitta,K.R., Morgunova,E. and Taipale,M. <em>et al.</em> (2018) The interaction landscape between transcription factors and the nucleosome. <em>Nature</em>.</p>
+</div>
+<div id="ref-Dogan2020">
+<p>4. Dogan,B., Kailasam,S., Corchado,A.H., Nikpoor,N. and Hamed,S. (2020) A domain-resolution map of in vivo DNA binding reveals the regulatory consequences of somatic mutations in zinc finger transcription factors. <em>bioRxiv</em>.</p>
+</div>
+<div id="ref-Nitta2019">
+<p>5. Nitta,K.R., Vincentelli,R., Jacox,E., Cimino,A., Ohtsuka,Y., Sobral,D., Satou,Y., Cambillau,C. and Lemaire,P. (2019) High-throughput protein production combined with high- throughput selex identifies an extensive atlas of ciona robusta transcription factor dna-binding specificities. In Vincentelli,R. (ed), <em>High-throughput protein production and purification: Methods and protocols</em>. Springer New York, New York, NY, pp. 487–517.</p>
+</div>
+<div id="ref-Yamada2020">
+<p>6. Yamada,N., Rossi,M.J., Farrell,N., Pugh,B.F. and Mahony,S. (2020) NAR Breakthrough Article Alignment and quantification of ChIP-exo crosslinking patterns reveal the spatial organization of protein – DNA complexes. <em>Nucleic Acids Research</em>, <a href="https://doi.org/10.1093/nar/gkaa618">10.1093/nar/gkaa618</a>.</p>
+</div>
+<div id="ref-Nguyen2018">
+<p>7. Nguyen,N.T.T., Contreras-Moreira,B., Castro-Mondragon,J.A., Santana-Garcia,W., Ossio,R., Robles-Espinoza,C.D., Bahin,M., Collombet,S., Vincens,P. and Thieffry,D. <em>et al.</em> (2018) RSAT 2018: Regulatory sequence analysis tools 20th anniversary. <em>Nucleic Acids Research</em>, <strong>46</strong>, W209–W214.</p>
+</div>
+<div id="ref-Thomas-Chollier2012">
+<p>8. Thomas-Chollier,M., Herrmann,C., Defrance,M., Sand,O., Thieffry,D. and Van Helden,J. (2012) RSAT peak-motifs: Motif analysis in full-size ChIP-seq datasets. <em>Nucleic Acids Research</em>, <strong>40</strong>, 1–9.</p>
+</div>
+<div id="ref-Chenevy2020">
+<p>9. Chenevy,J., Zacharie,M., Mestdagh,M., Rosnet,T., Douida,A., Rhalloussi,W., Lopez,F. and Ballester,B. (2020) ReMap 2020 : a database of regulatory regions from an integrative analysis of Human and Arabidopsis DNA-binding sequencing experiments. <em>Nucleic Acids Research</em>, <strong>48</strong>, 180–188.</p>
+</div>
+<div id="ref-Yevshin2019">
+<p>10. Yevshin,I., Sharipov,R. and Kolpakov,F. (2019) GTRD : a database on gene transcription regulation –– 2019 update. <em>Nucleic Acids Research</em>, <strong>47</strong>, 100–105.</p>
+</div>
+<div id="ref-Oki2018">
+<p>11. Oki,S., Ohta,T., Shioi,G., Hatanaka,H. and Ogasawara,O. (2018) ChIP-Atlas : a data-mining suite powered by full integration of public ChIP-seq data. <a href="https://doi.org/10.15252/embr.201846255">10.15252/embr.201846255</a>.</p>
+</div>
+<div id="ref-Zheng2018">
+<p>12. Zheng,R., Wan,C., Mei,S., Qin,Q., Wu,Q., Sun,H., Chen,C.-H., Brown,M., Zhang,X. and Meyer,C.A. <em>et al.</em> (2018) Cistrome Data Browser: expanded datasets and new tools for gene regulatory analysis. <em>Nucleic Acids Research</em>, <a href="https://doi.org/10.1093/nar/gky1094">10.1093/nar/gky1094</a>.</p>
+</div>
+</div>
+</div>
+</div>
+   
+   
+      
+      
+
+  <script>
+    $(document).ready(function () {
+
+			
+ 	 	$('#content img').addClass("image-thumb");
+		
+		$('#content img').addClass("image-lb");
+	$('#content').magnificPopup({
+	    type:'image',
+	    closeOnContentClick: false,
+	    closeBtnInside: false,
+	    delegate: 'img',
+	    gallery: {enabled: false },
+	    image: {
+	        verticalFit: true,
+		titleSrc: 'alt'
+	    }
+ 	});
+ 	    });
+  </script>
+
+
+
+    <!-- dynamically load mathjax for compatibility with self-contained -->
+  <script>
+    (function () {
+	var script = document.createElement("script");
+	script.type = "text/javascript";
+	script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+	document.getElementsByTagName("head")[0].appendChild(script);
+    })();
+  </script>
+  
+</body>
+</html>

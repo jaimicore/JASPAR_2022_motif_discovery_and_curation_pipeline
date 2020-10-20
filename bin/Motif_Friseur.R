@@ -2,7 +2,8 @@
 ## Load R packages ##
 #####################
 required.libraries <- c("optparse",
-                        "universalmotif")
+                        "universalmotif",
+                        "data.table")
 
 for (lib in required.libraries) {
   suppressPackageStartupMessages(library(lib, character.only = TRUE, quietly = T))
@@ -56,6 +57,19 @@ trim.r        <- opt$right
 from          <- opt$from
 to            <- opt$to
 out.dir       <- opt$output_directory
+
+## Debug:
+# setwd("JASPAR_2022")
+# motif.file <- "ZFP42_rounded.jaspar"
+# motif.file <- "ZFP42.jaspar"
+# motif.file <- "MA1651.1.jaspar"
+
+# motif.format <- "jaspar"
+# from <- 1
+# to <- 2
+# trim.b <- NULL
+# trim.l <- NULL
+# trim.r <- NULL
 
 
 ############################
@@ -153,9 +167,45 @@ if (!tolower(motif.format) %in% supported.formats) {
 message("; Reading input motif file: ", motif.file)
 if (motif.format == "jaspar") {
   
-  motif.pfm  <- read_jaspar(motif.file)
-  motif.id   <-  motif.pfm["name"]
-  motif.name <-  motif.pfm["altname"]
+  
+  dt.motif <- fread(motif.file)
+  
+  ## JASPAR header name
+  relevant.header.pos <- unlist(sapply(colnames(dt.motif), grep, pattern = "^V\\d+$", invert = T, value = T))
+  
+  if (grepl(relevant.header.pos, pattern = "\t")) {
+    relevant.header.pos <- strsplit(relevant.header.pos, split = "\t")
+  }
+  
+  header.name <- paste(relevant.header.pos, collapse = " ")
+  
+  annotations <- sapply(relevant.header.pos, gsub, pattern = "^>", replacement = "")
+  motif.id <- annotations[1]
+  
+  if(length(annotations) > 1){
+    motif.name <- annotations[2]
+  } else {
+    motif.name <- ""
+  }
+  
+  
+  dt.counts <- dt.motif[, 2:(ncol(dt.motif)-1)]
+  
+  if(all(dt.counts[,1] == "[")){
+    dt.counts <- dt.counts[,-1]
+  }
+  
+  dt.counts <- data.frame(apply(dt.counts, 2, gsub, pattern = "\\[", replacement = ""))
+  
+  dt.counts.rounded <- round(apply(dt.counts,2,as.numeric))
+  
+  
+  motif.pfm <- universalmotif::create_motif(dt.counts.rounded, alphabet = "ACTG", type = "PFM")
+  
+  
+  # motif.pfm  <- read_jaspar(motif.file)s
+  # motif.id   <-  motif.pfm["name"]
+  # motif.name <-  motif.pfm["altname"]
 
 }
 

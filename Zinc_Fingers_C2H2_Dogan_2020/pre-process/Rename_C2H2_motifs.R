@@ -81,7 +81,7 @@ for (i in seq_along(uniprot.name.dict$File_ori)) {
   ## RSAT onvert-matrix command
   ## From cis-bp to transfac format
   ## Add manually the TF name
-  convert.matrix.cmd <- paste0("convert-matrix -i ", f, " -from cis-bp -to tf -multiply 1000 -attr name ", tf," -attr accession ", tf, " > ", new.file)
+  convert.matrix.cmd <- paste0("convert-matrix -i ", f, " -from cis-bp -to jaspar -multiply 1000 -attr name ", tf," -attr accession ", tf, " > ", new.file)
   message("; ", convert.matrix.cmd)
   system(convert.matrix.cmd)
   
@@ -96,7 +96,7 @@ for (i in seq_along(uniprot.name.dict$File_ori)) {
 
 
 ## Generate logos
-logos.cmd <- paste("convert-matrix -i ", all.motifs.file, " -from tf -to tf -return logo -logo_dir ", logo.folder)
+logos.cmd <- paste("convert-matrix -i ", all.motifs.file, " -from jaspar -to jaspar -return logo -logo_dir ", logo.folder)
 message("; ", logos.cmd)
 system(logos.cmd)
 

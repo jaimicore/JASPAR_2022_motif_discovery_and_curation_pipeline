@@ -17,8 +17,10 @@ if config['analysis_id'] == "ReMap2020_Human":
     configfile: "config_files/config_Hsapiens_hg38.yaml"
 elif config['analysis_id'] == "ChExMix_sacCer3":
     configfile: "config_files/config_yeast_sacCer3_chexmix.yaml"
+elif config['analysis_id'] == "ReMap2020_Athaliana":
+    configfile: "config_files/config_Athaliana_TAR10_REMAP.yaml"
 else :
-    print("; ERROR: analysis name not found. Supported: ReMap2020_Human | ChExMix_sacCer3")
+    print("; ERROR: analysis name not found. Supported: ReMap2020_Human | ReMap2020_Athaliana | ChExMix_sacCer3")
 
 
 ##########################
@@ -66,9 +68,9 @@ rule all:
 ## This rule may vary according to the data source ##
 #####################################################
 
-################
-## REMAP 2022 ##
-################
+#############################
+## REMAP 2022 Homo sapiens ##
+#############################
 if config['analysis_id'] == "ReMap2020_Human":
     
     rule extract_peak_summits:
@@ -87,6 +89,29 @@ if config['analysis_id'] == "ReMap2020_Human":
             """
             awk '{{ print $1"\\t"($2+$10)"\\t"($2+$10+1)}}' {input} > {output}
             """
+            
+#####################################
+## REMAP 2022 Arabidopsis thaliana ##
+#####################################
+if config['analysis_id'] == "ReMap2020_Athaliana":
+    
+    rule extract_peak_summits:
+        """
+        Extract peak summits: chromosome, start, end
+        """
+        input:
+            os.path.join(config["data_folder"], "{TF}", "{TF}_peaks.narrowPeak")
+        output:
+            os.path.join(config["out_dir"], "{TF}", "peak_summits", "{TF}_peak_summits.bed")
+        message:
+            "; Peak summits - TF : {wildcards.TF}"
+        priority:
+            100
+        shell:
+            """
+            awk '{{ print $1"\\t"($2+$7)"\\t"($2+$7+1)}}' {input} > {output}
+            """
+
             
 #############
 ## ChExMix ##

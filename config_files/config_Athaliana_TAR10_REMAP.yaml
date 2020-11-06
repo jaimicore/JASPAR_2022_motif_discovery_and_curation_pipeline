@@ -27,12 +27,8 @@ central_pvalue : -200
 ## Arabaidposis thaliana (TAIR10) : folders and required input files ##
 ## ================================================================= ##
 data_folder : /storage/scratch/JASPAR_2022/REMAP_2020_Athaliana/data
-#TF_Experiment_map : 
-#genome_fasta : /storage/mathelierarea/raw/UCSC/TAIR10/Sequence/WholeGenomeFasta/TAIR10.fa
-#genome_size : /storage/mathelierarea/raw/UCSC/TAIR10/Sequence/WholeGenomeFasta/TAIR10.chrom.sizes
+TF_Experiment_map : /storage/scratch/JASPAR_2022/REMAP_2020_Athaliana/data/mapping.tsv
+genome_fasta : /storage/mathelierarea/raw/UCSC/TAIR10/Sequence/WholeGenomeFasta/TAIR10.fa
+genome_size : /storage/mathelierarea/raw/UCSC/TAIR10/Sequence/WholeGenomeFasta/TAIR10.chrom.sizes
 out_dir : /storage/scratch/JASPAR_2022/REMAP_2020_Athaliana/data/results
 curation_dir : /storage/scratch/JASPAR_2022/REMAP_2020_Athaliana/data/results/curation
-
-TF_Experiment_map : /storage/scratch/JASPAR_2022/REMAP_2020_Athaliana/data/mapping.tsv
-genome_fasta : /storage/mathelierarea/raw/UCSC/hg38/Sequence/WholeGenomeFasta/genome.fa
-genome_size : /storage/mathelierarea/raw/UCSC/hg38/Sequence/WholeGenomeFasta/hg38_chrom_sizes

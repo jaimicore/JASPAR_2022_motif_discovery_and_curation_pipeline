@@ -94,8 +94,8 @@ if config['analysis_id'] == "ReMap2020_Human":
 ## REMAP 2022 Arabidopsis thaliana ##
 #####################################
 if config['analysis_id'] == "ReMap2020_Athaliana":
-    
-    rule extract_peak_summits:
+   
+   rule extract_peak_summits:
         """
         Extract peak summits: chromosome, start, end
         """
@@ -109,7 +109,7 @@ if config['analysis_id'] == "ReMap2020_Athaliana":
             100
         shell:
             """
-            awk '{{ print $1"\\t"($2+$10)"\\t"($2+$10+1)}}' {input} > {output}
+            awk '{{ print "chr"$1"\\t"($2+$10)"\\t"($2+$10+1)}}' {input} > {output}
             """
 
             
@@ -450,7 +450,7 @@ rule Calculate_centrimo_pvalue:
         89
     shell:
         """
-        mkdir -p {params.centrimo_folder} ;
+        mkdir -m 077 -p {params.centrimo_folder} ;
         nb_TFBS="$(wc -l {input.sites} | cut -d ' ' -f 1)" ;
         nb_peaks="$(wc -l {input.peaks} | cut -d " " -f 1)" ;
         {params.scripts_bin}/centrimo_pval {input.sites} ${{nb_TFBS}} ${{nb_peaks}} 250 > {output}

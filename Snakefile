@@ -109,7 +109,7 @@ if config['analysis_id'] == "ReMap2020_Athaliana":
             100
         shell:
             """
-            awk '{{ print $1"\\t"($2+$7)"\\t"($2+$7+1)}}' {input} > {output}
+            awk '{{ print $1"\\t"($2+$10)"\\t"($2+$10+1)}}' {input} > {output}
             """
 
             

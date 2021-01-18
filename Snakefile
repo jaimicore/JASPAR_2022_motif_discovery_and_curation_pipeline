@@ -537,13 +537,14 @@ rule choose_best_centrimo_experiment:
     message:
         "; Selecting the most centrally enriched motif - TF : {wildcards.TF} "
     params:
-        scripts_bin = config["bin"],
-        centrimo_dir = os.path.join(config["out_dir"], "{TF}", "central_enrichment")
+        scripts_bin  = config["bin"],
+        centrimo_dir = os.path.join(config["out_dir"], "{TF}", "central_enrichment"),
+        nbmotifs     = config['top_motifs']
     priority:
         86
     shell:
         """
-        bash {params.scripts_bin}/best_centrimo.sh -i {params.centrimo_dir} > {output}
+        bash {params.scripts_bin}/best_centrimo.sh -i {params.centrimo_dir} -n {params.nbmotifs} > {output}
         """
 
 

@@ -417,7 +417,8 @@ rule Scan_JASPAR_PWM:
     input:
         logos = os.path.join(config["out_dir"], "{TF}", "motifs", "jaspar", "logos", "{TF}_peak-motifs_m{n}_logo.png"), \
         pwm = os.path.join(config["out_dir"], "{TF}", "motifs", "jaspar", "pwm", "{TF}_peak-motifs_m{n}.jaspar.pssm"), \
-        peaks = os.path.join(config["out_dir"], "{TF}", "fasta", "{TF}.501bp.fa")
+        peaks = os.path.join(config["out_dir"], "{TF}", "fasta", "{TF}.501bp.fa"), \
+	sites = os.path.join(config["out_dir"], "{TF}", "matrix_sites", "{TF}_peak-motifs_m{n}.tf.sites.fasta")
     output:
         os.path.join(config["out_dir"], "{TF}", "scan", "501bp", "{TF}_m{n}.501bp.fa")
     message:

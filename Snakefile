@@ -566,8 +566,10 @@ rule annotate_best_centrimo_experiment:
         85
     shell:
         """
-        perl {params.scripts_bin}/annotate_best_centrimo_experiment.pl --best {input.best_exp} --map {input.tf_jaspar_map} --output {output}
+        bash {params.scripts_bin}/annotate_best_centrimo_experiment.sh {input.best_exp} {input.tf_jaspar_map} {output}
         """
+# #perl {params.scripts_bin}/annotate_best_centrimo_experiment.pl --best {input.best_exp} --map {input.tf_jaspar_map} --output {output}
+
 
 
 ##########################

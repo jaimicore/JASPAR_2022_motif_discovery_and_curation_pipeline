@@ -374,12 +374,13 @@ rule convert_RSAT_matrix_sites_to_BED:
     message:
         "; Obtaining genomic coordinates for sites - TF : {wildcards.TF} - Matrix number: {wildcards.n}"
     params:
-        scripts_bin = config["bin"]
+        scripts_bin = config["bin"],
+	genome_name = config['genome_name']
     priority:
         92
     shell:
         """
-        awk -f {params.scripts_bin}/sites-to-bed.awk {input} > {output}
+        awk -v species={params.genome_name} -f {params.scripts_bin}/sites-to-bed.awk {input} > {output}
         """
 
 
@@ -544,7 +545,7 @@ rule choose_best_centrimo_experiment:
         86
     shell:
         """
-        bash {params.scripts_bin}/best_centrimo.sh -i {params.centrimo_dir} -n {params.nbmotifs} > {output}
+        bash {params.scripts_bin}/best_centrimo.sh -i {params.centrimo_dir} -m {params.nbmotifs} > {output}
         """
 
 
@@ -631,7 +632,7 @@ rule Select_motifs_to_curate:
         82
     shell:
         """
-        cat {input} | awk -F"\t" '{{ if ($16 <= {params.central_pval}) {{ print }} }}' | uniq > {output}
+        cat {input} | awk -F"\t" '{{ if ($6 <= {params.central_pval}) {{ print }} }}' | uniq > {output}
         """
 
 
@@ -677,6 +678,6 @@ rule Motifs_to_curate_PDF:
         80
     shell:
         """
-        PDF_FILES=` awk -F"\t" '{{ print $20 }}' {input} | xargs `
+        PDF_FILES=` awk -F"\t" '{{ print $10 }}' {input} | xargs `
         pdfunite $PDF_FILES {output}
         """

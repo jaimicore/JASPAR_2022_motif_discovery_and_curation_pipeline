@@ -374,12 +374,13 @@ rule convert_RSAT_matrix_sites_to_BED:
     message:
         "; Obtaining genomic coordinates for sites - TF : {wildcards.TF} - Matrix number: {wildcards.n}"
     params:
-        scripts_bin = config["bin"]
+        scripts_bin = config["bin"],
+	genome_name = config['genome_name']
     priority:
         92
     shell:
         """
-        awk -f {params.scripts_bin}/sites-to-bed.awk {input} > {output}
+        awk -v species={params.genome_name} -f {params.scripts_bin}/sites-to-bed.awk {input} > {output}
         """
 
 
@@ -416,7 +417,8 @@ rule Scan_JASPAR_PWM:
     input:
         logos = os.path.join(config["out_dir"], "{TF}", "motifs", "jaspar", "logos", "{TF}_peak-motifs_m{n}_logo.png"), \
         pwm = os.path.join(config["out_dir"], "{TF}", "motifs", "jaspar", "pwm", "{TF}_peak-motifs_m{n}.jaspar.pssm"), \
-        peaks = os.path.join(config["out_dir"], "{TF}", "fasta", "{TF}.501bp.fa")
+        peaks = os.path.join(config["out_dir"], "{TF}", "fasta", "{TF}.501bp.fa"), \
+	sites = os.path.join(config["out_dir"], "{TF}", "matrix_sites", "{TF}_peak-motifs_m{n}.tf.sites.fasta")
     output:
         os.path.join(config["out_dir"], "{TF}", "scan", "501bp", "{TF}_m{n}.501bp.fa")
     message:
@@ -537,13 +539,14 @@ rule choose_best_centrimo_experiment:
     message:
         "; Selecting the most centrally enriched motif - TF : {wildcards.TF} "
     params:
-        scripts_bin = config["bin"],
-        centrimo_dir = os.path.join(config["out_dir"], "{TF}", "central_enrichment")
+        scripts_bin  = config["bin"],
+        centrimo_dir = os.path.join(config["out_dir"], "{TF}", "central_enrichment"),
+        nbmotifs     = config['top_motifs']
     priority:
         86
     shell:
         """
-        bash {params.scripts_bin}/best_centrimo.sh -i {params.centrimo_dir} > {output}
+        bash {params.scripts_bin}/best_centrimo.sh -i {params.centrimo_dir} -m {params.nbmotifs} > {output}
         """
 
 
@@ -565,8 +568,10 @@ rule annotate_best_centrimo_experiment:
         85
     shell:
         """
-        perl {params.scripts_bin}/annotate_best_centrimo_experiment.pl --best {input.best_exp} --map {input.tf_jaspar_map} --output {output}
+        bash {params.scripts_bin}/annotate_best_centrimo_experiment.sh {input.best_exp} {input.tf_jaspar_map} {output}
         """
+# #perl {params.scripts_bin}/annotate_best_centrimo_experiment.pl --best {input.best_exp} --map {input.tf_jaspar_map} --output {output}
+
 
 
 ##########################
@@ -628,7 +633,7 @@ rule Select_motifs_to_curate:
         82
     shell:
         """
-        cat {input} | awk -F"\t" '{{ if ($16 <= {params.central_pval}) {{ print }} }}' | uniq > {output}
+        cat {input} | awk -F"\t" '{{ if ($6 <= {params.central_pval}) {{ print }} }}' | uniq > {output}
         """
 
 
@@ -674,6 +679,6 @@ rule Motifs_to_curate_PDF:
         80
     shell:
         """
-        PDF_FILES=` awk -F"\t" '{{ print $20 }}' {input} | xargs `
+        PDF_FILES=` awk -F"\t" '{{ print $10 }}' {input} | xargs `
         pdfunite $PDF_FILES {output}
         """

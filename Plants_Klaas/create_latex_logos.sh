@@ -66,7 +66,7 @@ do
     #exp_ID=$(echo $line | cut -d ' ' -f 9 | tr '_' '-');
     centrimo_pval=${line[5]}
     #centrimo_pval=$(echo $line | cut -d ' ' -f 6);
-    
+
     ## Read motif logo
     motif_logo_original=${line[7]}
     #motif_logo_original=$(echo $line | cut -d ' ' -f 8);
@@ -96,7 +96,7 @@ do
     #printf "\\section*{$tfname}\n\\section*{$exp_ID}\nCentrality p-value = $centrimo_pval \\\\ \n\\includegraphics{$motif_logo}\nCentrimo plot \\\\ \n\\includegraphics[width=8cm, height=8cm]{$centrimo_plot}\n" >> $output
     echo "\\section*{$tfname}" >> $output;
     echo "\\section*{$exp_ID}" >> $output;
-    echo "Centrality p-value = $centrimo_pval \\\\" >> $output;
+    echo "-log10(Centrality p-value) = $centrimo_pval \\\\" >> $output;
     echo "\\includegraphics{$motif_logo}" >> $output;
     echo "Centrimo plot \\\\" >> $output;
     echo "\\includegraphics[width=8cm, height=8cm]{$centrimo_plot}" >> $output;

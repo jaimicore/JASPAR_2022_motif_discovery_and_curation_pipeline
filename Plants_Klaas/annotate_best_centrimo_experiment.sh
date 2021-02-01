@@ -3,10 +3,11 @@ map=$2;
 output=$3;
 
 while IFS=$'\t' read -r -a line
-do 
-  
+do
+
   file=${line[0]}
   pval=${line[1]}
+  pval=$(awk -v a=$pval 'BEGIN{print (-1 * a)}')
 
   file_bname=$(basename $file)
   file_bname_motif=${file_bname%%".501bp.fa.sites.centrimo"}
@@ -37,6 +38,5 @@ do
 
   printf "${jaspar_file}\t${TF}\t${data_source}\t${sites_bed_file}\t${sites_fa_file}\t${pval}\t${centrimo_pdf_file}\t${logo_file}\t${dset_id}\t${pdf_selected}\t${png_file}\n" >> $output
 
-  
-done < $best
 
+done < $best

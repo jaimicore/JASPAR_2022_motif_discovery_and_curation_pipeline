@@ -576,7 +576,7 @@ rule Select_motifs_to_curate:
         82
     shell:
         """
-        cat {input} | awk -F"\t" '{{ if ($6 <= {params.central_pval}) {{ print }} }}' | uniq > {output}
+        cat {input} | awk -F"\t" '{{ if ($6 >= {params.central_pval}) {{ print }} }}' | uniq > {output}
         """
 
 

@@ -96,7 +96,7 @@ do
     #printf "\\section*{$tfname}\n\\section*{$exp_ID}\nCentrality p-value = $centrimo_pval \\\\ \n\\includegraphics{$motif_logo}\nCentrimo plot \\\\ \n\\includegraphics[width=8cm, height=8cm]{$centrimo_plot}\n" >> $output
     echo "\\section*{$tfname}" >> $output;
     echo "\\section*{$exp_ID}" >> $output;
-    echo "Centrality p-value = $centrimo_pval \\\\" >> $output;
+    echo "-log10(Centrality p-value) = $centrimo_pval \\\\" >> $output;
     echo "\\includegraphics{$motif_logo}" >> $output;
     echo "Centrimo plot \\\\" >> $output;
     echo "\\includegraphics[width=8cm, height=8cm]{$centrimo_plot}" >> $output;

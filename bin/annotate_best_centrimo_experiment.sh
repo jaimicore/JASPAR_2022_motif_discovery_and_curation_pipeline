@@ -7,6 +7,7 @@ do
   
   file=${line[0]}
   pval=${line[1]}
+  pval=$(awk -v a=$pval 'BEGIN{print (-1 * a)}')
 
   file_bname=$(basename $file)
   file_bname_motif=${file_bname%%".501bp.fa.sites.centrimo"}

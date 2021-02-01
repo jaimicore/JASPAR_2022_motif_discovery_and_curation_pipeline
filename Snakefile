@@ -648,8 +648,8 @@ rule rename_jaspar_motif_header:
     >CTCF CTCF 
     """
     input:
-        logos = MOST_ENRICHED_MOTIF_ASSOC_LOGO, 
-        os.path.join(config["curation_dir"], "Selected_motifs_to_curate_log10_pval_{logpval}.tab")
+        logos     = MOST_ENRICHED_MOTIF_ASSOC_LOGO, 
+        exp_table = os.path.join(config["curation_dir"], "Selected_motifs_to_curate_log10_pval_{logpval}.tab")
     output:
         os.path.join(config["curation_dir"], "Renamed_log.txt")
     message:

@@ -619,21 +619,21 @@ rule Concat_annotated_experiments:
 
 rule Select_motifs_to_curate:
     """
-    Select those motifs satisfying the centrality p-value threshold.
+    Select those motifs satisfying the -log10(centrality p-value) threshold.
     """
     input:
         os.path.join(config["curation_dir"], "Annotated_experiments_cat.tab")
     output:
         os.path.join(config["curation_dir"], "Selected_motifs_to_curate_log10_pval_-200.tab")
     message:
-        "; Selecting motifs to curate - Centrality p-value: {{config['central_pvalue']}} "
+        "; Selecting motifs to curate avobe threshold -log10(Centrality p-value): {{config['central_pvalue']}} "
     params:
         central_pval = config["central_pvalue"]
     priority:
         82
     shell:
         """
-        cat {input} | awk -F"\t" '{{ if ($6 <= {params.central_pval}) {{ print }} }}' | uniq > {output}
+        cat {input} | awk -F"\t" '{{ if ($6 >= {params.central_pval}) {{ print }} }}' | uniq > {output}
         """
 
 

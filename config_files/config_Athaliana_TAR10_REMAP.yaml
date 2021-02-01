@@ -20,7 +20,8 @@ peakmotifs_disco_max_oligo : 7
 peakmotifs_class_interval : 25
 
 
-central_pvalue : -50
+## -Log10(Centraliyy p-value)
+central_pvalue : 50
 top_motifs     : 3
 
 
@@ -36,3 +37,6 @@ genome_name       : TAIR10
 out_dir           : /storage/scratch/JASPAR_2022/REMAP_2020_Athaliana/results
 curation_dir      : /storage/scratch/JASPAR_2022/REMAP_2020_Athaliana/data/results/curation
 taxon             : Plants
+
+
+# bash /storage/scratch/JASPAR_2022/bin/annotate_best_centrimo_experiment.sh /storage/scratch/JASPAR_2022/REMAP_2020_Athaliana/results/GSE60141_E2F3_Col-0-leaves-tnt-col/central_enrichment/selected_motif/GSE60141_E2F3_Col-0-leaves-tnt-col.501bp.fa.sites.centrimo.best /storage/scratch/JASPAR_2022/REMAP_2020_Athaliana/data/mapping.tsv /storage/scratch/JASPAR_2022/REMAP_2020_Athaliana/results/GSE60141_E2F3_Col-0-leaves-tnt-col/central_enrichment/selected_motif/GSE60141_E2F3_Col-0-leaves-tnt-col.501bp.fa.sites.centrimo.best.TF_associated

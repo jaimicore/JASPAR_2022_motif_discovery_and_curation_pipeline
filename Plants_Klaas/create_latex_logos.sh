@@ -60,15 +60,15 @@ do
     variant=$(basename ${line[0]})
     variant=${variant%%".jaspar"}
     variant=(${variant//"_"/" "})
-    tfname=${line[1]}
+    tfname=${line[3]}
     #tfname=$(echo $line | cut -d ' ' -f 2 | tr '_' '-');
-    exp_ID=$(echo ${line[8]}"-"${variant[4]} | tr '_' '-')
+    exp_ID=$(echo ${line[9]}"-"${variant[4]} | tr '_' '-')
     #exp_ID=$(echo $line | cut -d ' ' -f 9 | tr '_' '-');
-    centrimo_pval=${line[5]}
+    centrimo_pval=${line[16]}
     #centrimo_pval=$(echo $line | cut -d ' ' -f 6);
 
     ## Read motif logo
-    motif_logo_original=${line[7]}
+    motif_logo_original=${line[18]} # change
     #motif_logo_original=$(echo $line | cut -d ' ' -f 8);
     motif_logo_original_dirname=$(dirname $motif_logo_original);
     # prevent error: ! LaTeX Error: Unknown graphics extension: .16_LE_WA_peak-motifs_m5_logo.png.
@@ -77,7 +77,7 @@ do
     motif_logo=${motif_logo_original_dirname}/${motif_logo_new}
 
     ## Read centrality plot
-    centrimo_plot=${line[10]}
+    centrimo_plot=${line[17]} # change
     #centrimo_plot_original=$(echo $line | cut -d ' ' -f 11);
     #centrimo_plot_original_dirname=$(dirname $centrimo_plot_original);
     # prevent error: ! LaTeX Error: Unknown graphics extension: .16_LE_WA_peak-motifs_m5_logo.png.
@@ -104,4 +104,5 @@ do
 done;
 echo "\\end{document}" >> $output;
 outdir=$(dirname $output);
+
 pdflatex -output-directory $outdir $output;

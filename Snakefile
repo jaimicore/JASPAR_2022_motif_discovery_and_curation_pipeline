@@ -48,6 +48,8 @@ MOST_ENRICHED_MOTIF_ASSOC_LOGO = expand(os.path.join(config["out_dir"], "{TF}", 
 ## Output from rule JASPAR_annotation_table
 JASPAR_ANN_TAB = os.path.join(config["out_dir"], "Jaspar_2020_info_" + config["taxon"] + "_table.tab")
 
+LOGPVAL = [config['central_pvalue']]
+
 ################################################################
 ## Rules
 rule all:
@@ -55,8 +57,9 @@ rule all:
         expand(os.path.join(config["out_dir"], "{TF}", "peak-motifs", "results", "discovered_motifs", "{TF}_motifs_discovered.tf"), TF = TF_NAMES), \
         expand(os.path.join(config["out_dir"], "{TF}", "central_enrichment", "selected_motif", "{TF}.501bp.fa.sites.centrimo.best.TF_associated"), TF = TF_NAMES), \
         JASPAR_ANN_TAB, \
-        os.path.join(config["curation_dir"], "Renamed_log.txt"), \
-        os.path.join(config["curation_dir"], "Selected_motifs_to_curate_log10_pval_-200.pdf")
+        expand(os.path.join(config["curation_dir"], "Renamed_log_pval_{logpval}.txt"), logpval = LOGPVAL), \
+	expand(os.path.join(config["curation_dir"], "Selected_motifs_to_curate_log10_pval_{logpval}.tab"), logpval = LOGPVAL), \
+        expand(os.path.join(config["curation_dir"], "Selected_motifs_to_curate_log10_pval_{logpval}.pdf"), logpval = LOGPVAL)
 
         
 
@@ -624,7 +627,7 @@ rule Select_motifs_to_curate:
     input:
         os.path.join(config["curation_dir"], "Annotated_experiments_cat.tab")
     output:
-        os.path.join(config["curation_dir"], "Selected_motifs_to_curate_log10_pval_-200.tab")
+        os.path.join(config["curation_dir"], "Selected_motifs_to_curate_log10_pval_{logpval}.tab")
     message:
         "; Selecting motifs to curate avobe threshold -log10(Centrality p-value): {{config['central_pvalue']}} "
     params:
@@ -646,10 +649,10 @@ rule rename_jaspar_motif_header:
     >CTCF CTCF 
     """
     input:
-        logos = MOST_ENRICHED_MOTIF_ASSOC_LOGO, 
-        exp_table = os.path.join(config["curation_dir"], "Selected_motifs_to_curate_log10_pval_-200.tab")
+        logos     = MOST_ENRICHED_MOTIF_ASSOC_LOGO, 
+        exp_table = os.path.join(config["curation_dir"], "Selected_motifs_to_curate_log10_pval_{logpval}.tab")
     output:
-        os.path.join(config["curation_dir"], "Renamed_log.txt")
+        os.path.join(config["curation_dir"], "Renamed_log_pval_{logpval}.txt")
     message:
         "; Renaming jaspar motif header"
     priority:
@@ -670,9 +673,9 @@ rule Motifs_to_curate_PDF:
     Concat the PDF of the selected motifs
     """
     input:
-        os.path.join(config["curation_dir"], "Selected_motifs_to_curate_log10_pval_-200.tab")
+        os.path.join(config["curation_dir"], "Selected_motifs_to_curate_log10_pval_{logpval}.tab")
     output:
-        os.path.join(config["curation_dir"], "Selected_motifs_to_curate_log10_pval_-200.pdf")
+        os.path.join(config["curation_dir"], "Selected_motifs_to_curate_log10_pval_{logpval}.pdf")
     message:
         "; Concatenating PDFs with the motifs to curate "
     priority:

@@ -20,12 +20,13 @@ eval set -- "$TEMP";
 
 rsat_dir=""
 nmotifs=1
-
+#th_pval=50
 while true
 do
   case "$1" in
     -i) rsat_dir=$2; shift 2;;
     -m) nmotifs=$2; shift 2;;
+#    -t) th_pval=$2; shift 2;;
     -h) echo -e $usage; exit;;
     --) shift; break;;
     *) echo "Internal error!"; exit 1;;
@@ -45,6 +46,10 @@ done > centri_$PPID;
 
 
 #echo $nmotifs;
-sort -n -k2 centri_$PPID | head -n $nmotifs
+#echo $th_pval;
+#sort -n -k2 centri_$PPID | head -n $nmotifs | awk -v p=$th_pval '{ if($2 <= -p){ print }}'
+sort -n -k2 centri_$PPID | head -n $nmotifs 
+
+#awk '{ if($2 <= -$th_pval) { print $1"\t"$2; }}'
 rm centri_$PPID;#!/usr/bin/env bash
 

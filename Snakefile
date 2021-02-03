@@ -682,6 +682,6 @@ rule Motifs_to_curate_PDF:
         80
     shell:
         """
-        PDF_FILES=` awk -F"\t" '{{ print $20 }}' {input} | xargs `
+        PDF_FILES=` awk -F"\t" '{{ print $20 }}' {input} | uniq | xargs `
         pdfunite $PDF_FILES {output}
         """

@@ -13,7 +13,7 @@ $0 -l <latex header file> -i <input file> -o <output file>
 \usepackage[export]{adjustbox}
 \usepackage{graphicx}
 
-TEMP=`getopt -o ho:i:l: -- "$@"`;
+TEMP=`getopt -o ho:i:l:t: -- "$@"`;
 
 if [ $? != 0 ]
 then
@@ -25,12 +25,14 @@ eval set -- "$TEMP";
 input="NA";
 output="NA";
 latexheader="NA";
+th_pvalue=0;
 while true
 do
   case "$1" in
     -i) input=$2; shift 2;;
     -o) output=$2; shift 2;;
     -l) latexheader=$2; shift 2;;
+    -t) th_pvalue=$2; shift 2;;
     -h) echo -e $usage; exit;;
     --) shift; break;;
     *) echo "Internal error!"; exit 1;;
@@ -90,8 +92,8 @@ do
     #motif_pdf=$(echo $line | cut -d ' ' -f 7);
 
 
-   # if (( $(echo "$centrimo_pval < 0." | bc -l) ))
-    #then
+   if (( $(echo "$centrimo_pval >= $th_pvalue" | bc -l) ))
+    then
 
     #printf "\\section*{$tfname}\n\\section*{$exp_ID}\nCentrality p-value = $centrimo_pval \\\\ \n\\includegraphics{$motif_logo}\nCentrimo plot \\\\ \n\\includegraphics[width=8cm, height=8cm]{$centrimo_plot}\n" >> $output
     echo "\\section*{$tfname}" >> $output;
@@ -100,7 +102,7 @@ do
     echo "\\includegraphics{$motif_logo}" >> $output;
     echo "Centrimo plot \\\\" >> $output;
     echo "\\includegraphics[width=8cm, height=8cm]{$centrimo_plot}" >> $output;
-    #fi;
+    fi;
 done;
 echo "\\end{document}" >> $output;
 outdir=$(dirname $output);

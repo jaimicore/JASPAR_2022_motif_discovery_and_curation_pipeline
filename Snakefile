@@ -592,12 +592,13 @@ rule best_centrimo_experiment_logo:
     message:
         "; Generating latex logo for selected motif: {wildcards.TF} "
     params:
-        scripts_bin = config["bin"]
+        scripts_bin = config["bin"],
+	logpval     = config['central_pvalue']
     priority:
         84
     shell:
         """
-        bash {params.scripts_bin}/create_latex_logos.sh -l {params.scripts_bin}/latex_header.txt -i {input} -o {output}
+        bash {params.scripts_bin}/create_latex_logos.sh -l {params.scripts_bin}/latex_header.txt -i {input} -o {output} -t {params.logpval}
         """
 
 
@@ -636,7 +637,7 @@ rule Select_motifs_to_curate:
         82
     shell:
         """
-        cat {input} | awk -F"\t" '{{ if ($6 >= {params.central_pval}) {{ print }} }}' | uniq > {output}
+        cat {input} | awk -F"\t" '{{ if ($17 >= {params.central_pval}) {{ print }} }}' | uniq > {output}
         """
 
 
@@ -678,10 +679,11 @@ rule Motifs_to_curate_PDF:
         os.path.join(config["curation_dir"], "Selected_motifs_to_curate_log10_pval_{logpval}.pdf")
     message:
         "; Concatenating PDFs with the motifs to curate "
+    params: central_pval = config["central_pvalue"]
     priority:
         80
     shell:
         """
-        PDF_FILES=` awk -F"\t" '{{ print $20 }}' {input} | uniq | xargs `
+        PDF_FILES=` awk -F"\t" '{{ if($17 >= {params.central_pval}){{ print $20 }}}}' {input} | uniq | xargs `
         pdfunite $PDF_FILES {output}
         """

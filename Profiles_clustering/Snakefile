@@ -22,8 +22,8 @@ RESULTS_DIR = os.path.join(MAIN_DIR, "results")
 
 ## Taxa
 TAXA = "vertebrates insects plants nematodes fungi".split()
-TAXA = "nematodes insects nematodes fungi urochordates".split()
-TAXA = "nematodes".split()
+TAXA = "vertebrates plants nematodes insects fungi urochordates".split()
+#TAXA = "nematodes".split()
 
 ## Collection
 COLLECTIONS = "CORE UNVALIDATED".split()

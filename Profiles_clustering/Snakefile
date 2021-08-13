@@ -11,10 +11,10 @@ RSAT = os.environ['RSAT']
 
 ################################################################
 ## Define data + output folders
-MAIN_DIR = ""
-DATA_DIR = os.path.join(MAIN_DIR, "data")
-MOTIFS_DIR = os.path.join(DATA_DIR, "motifs")
-TABLES_DIR = os.path.join(DATA_DIR, "annotation_tables")
+MAIN_DIR    = ""
+DATA_DIR    = os.path.join(MAIN_DIR, "data")
+MOTIFS_DIR  = os.path.join(DATA_DIR, "motifs")
+TABLES_DIR  = os.path.join(DATA_DIR, "annotation_tables")
 RESULTS_DIR = os.path.join(MAIN_DIR, "results")
 
 ################################################################
@@ -22,10 +22,12 @@ RESULTS_DIR = os.path.join(MAIN_DIR, "results")
 
 ## Taxa
 TAXA = "vertebrates insects plants nematodes fungi".split()
+TAXA = "nematodes insects nematodes fungi urochordates".split()
 TAXA = "nematodes".split()
 
 ## Collection
 COLLECTIONS = "CORE UNVALIDATED".split()
+COLLECTIONS = "CORE".split()
 
 
 ################################################################
@@ -33,17 +35,41 @@ COLLECTIONS = "CORE UNVALIDATED".split()
 
 PARSE_MOTIF_IDS         = expand(os.path.join(MOTIFS_DIR, "{taxon}", "JASPAR_2022_{collection}_{taxon}.tf"), taxon = TAXA, collection = COLLECTIONS)
 CLUSTERING_INTERACTIVE  = expand(os.path.join(RESULTS_DIR, "JASPAR_2022_matrix_clustering", "{taxon}", "{collection}", "interactive_trees", "JASPAR_2022_matrix_clustering_{taxon}_{collection}_SUMMARY.html"), taxon = TAXA, collection = COLLECTIONS)
+MOTIFS_METADATA         = expand(os.path.join(TABLES_DIR, "{taxon}", "{collection}", "JASPAR_2022_info_{taxon}_table.tab"), taxon = TAXA, collection = COLLECTIONS)
+ANNOTATION_TABLES       = expand(os.path.join(TABLES_DIR, "{taxon}", "{collection}", "JASPAR_2022_{taxon}_annotations.tsv"), taxon = TAXA, collection = COLLECTIONS)
 PARSE_ANNOTATION_TABLES = expand(os.path.join(TABLES_DIR, "{taxon}", "{collection}", "JASPAR_2022_{taxon}_{collection}_annotations_with_colours.tsv"), taxon = TAXA, collection = COLLECTIONS)
 HTML_TF_CLASS_COLOUR    = expand(os.path.join(TABLES_DIR, "{taxon}", "{collection}", "JASPAR_2022_{taxon}_{collection}_TF_class_colours.html"), taxon = TAXA, collection = COLLECTIONS)
 CLUSTERING_RADIAL       = expand(os.path.join(RESULTS_DIR, "JASPAR_2022_matrix_clustering", "{taxon}", "{collection}", "radial_trees", "JASPAR_2022_matrix_clustering_{taxon}_{collection}_tree_annotated.html"), taxon = TAXA, collection = COLLECTIONS)
 
 
 rule all:
-    input: PARSE_MOTIF_IDS,         \
-           CLUSTERING_INTERACTIVE,  \
-	   PARSE_ANNOTATION_TABLES, \
-           HTML_TF_CLASS_COLOUR,    \
+    input: PARSE_MOTIF_IDS,          \
+           MOTIFS_METADATA,          \
+           PARSE_ANNOTATION_TABLES,  \
+           CLUSTERING_INTERACTIVE,   \
+           HTML_TF_CLASS_COLOUR,     \
            CLUSTERING_RADIAL
+
+     
+
+
+
+################################################################
+## Download the motifs directly from the website
+## This is more robust than copy/pasting the files, in addition, once the DB is updated, this pipeline cna be easily re-launched
+rule download_JASPAR_CORE_motifs:
+     """
+     """
+     input:
+          os.path.join(DATA_DIR, "motifs")
+     output:
+          os.path.join(MOTIFS_DIR, "JASPAR_2022_{collection}_{taxon}_non-redundant_pfms_transfac.txt")
+     message:
+          "Downloading JASPAR CORE {wildcards.taxon} motifs"
+     shell:
+          """
+          wget https://testjaspar.uio.no/download/data/2022/CORE/JASPAR2022_CORE_{wildcards.taxon}_non-redundant_pfms_transfac.txt -O {output}
+          """
 
 
 
@@ -96,6 +122,47 @@ rule CLUSTER_MATRICES_HTML_REPORT:
 
 
 
+
+################################################################
+## Download JASPAR 2022 metadata table
+## NOTE: for future releases, before running the clustering the script called in this rule must be ready
+rule JASPAR_2022_METADATA:
+     """
+     """
+     input:
+          os.path.join(TABLES_DIR, "{taxon}", "{collection}")
+     output:
+          os.path.join(TABLES_DIR, "{taxon}", "{collection}", "JASPAR_2022_info_{taxon}_table.tab")
+     message:
+          "Downloading metadata {wildcards.taxon} {wildcards.collection}"
+     params:
+          out_dir = os.path.join(TABLES_DIR, "{taxon}", "{collection}")
+     shell:
+          """
+          Rscript bin/Retrieve_matrix_information_from_JASPAR2022.R -t {wildcards.taxon} -o {params.out_dir}
+          """
+
+     
+################################################################
+## Generate the annotation table, as required by matrix-clutering for generating the radial tree
+rule JASPAR_2022_ANNOTATION_TAB:
+     """
+     """
+     input:
+          os.path.join(TABLES_DIR, "{taxon}", "{collection}", "JASPAR_2022_info_{taxon}_table.tab")
+     output:
+          os.path.join(TABLES_DIR, "{taxon}", "{collection}", "JASPAR_2022_{taxon}_annotations.tsv")
+     message:
+          "Generating annotation table for display TF class info in the radial tree : {wildcards.taxon} {wildcards.collection}"
+     shell:
+          """
+          more {input} | grep {wildcards.taxon} | awk -F "\\t" '{{ print $1"."$2"\\t"$3"\\thttps://testjaspar.uio.no/matrix/"$1"."$2"/\\t#\\t"$6}}' | sed '1 i\matrix_id\\tname\\tURL\\tcolour\\tclass' > {output}
+          """
+
+
+
+
+
 ################################################################
 ## Assign colors to the TF families (for the outter ring and background in the radial tree)
 ## Creates an HTML table with the legend (this has to be manually added to the html file with the radial tree)
@@ -103,7 +170,7 @@ rule assign_TF_class_colours:
 	"""
 	"""
 	input:
-            os.path.join(TABLES_DIR, "JASPAR_2022_{taxon}_annotations.tsv")
+            os.path.join(TABLES_DIR, "{taxon}", "{collection}", "JASPAR_2022_{taxon}_annotations.tsv")
 	output:
             annotation     = os.path.join(TABLES_DIR, "{taxon}", "{collection}", "JASPAR_2022_{taxon}_{collection}_annotations_with_colours.tsv"), \
             annotation_rad = os.path.join(TABLES_DIR, "{taxon}", "{collection}", "JASPAR_2022_{taxon}_{collection}_annotations_radial_tree.tsv"), \
@@ -157,4 +224,5 @@ rule CLUSTER_MATRICES_RADIAL:
         ## Adds the annotation +  color ring + background
         Rscript annotate_matrix-clustering.R --annotation {input.color_table} --input {params.tree_folder} ;
         """
+
 

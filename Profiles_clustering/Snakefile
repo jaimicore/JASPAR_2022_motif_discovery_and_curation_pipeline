@@ -21,8 +21,9 @@ RESULTS_DIR = os.path.join(MAIN_DIR, "results")
 ## Parameters Variables (used in different rules)
 
 ## Taxa
-TAXA = "vertebrates insects plants nematodes fungi".split()
-TAXA = "vertebrates plants nematodes insects fungi urochordates".split()
+#TAXA = "vertebrates plants nematodes insects fungi urochordates".split()
+TAXA = "nematodes insects fungi urochordates".split()
+TAXA = "nematodes urochordates".split()
 #TAXA = "nematodes".split()
 
 ## Collection
@@ -40,18 +41,17 @@ ANNOTATION_TABLES       = expand(os.path.join(TABLES_DIR, "{taxon}", "{collectio
 PARSE_ANNOTATION_TABLES = expand(os.path.join(TABLES_DIR, "{taxon}", "{collection}", "JASPAR_2022_{taxon}_{collection}_annotations_with_colours.tsv"), taxon = TAXA, collection = COLLECTIONS)
 HTML_TF_CLASS_COLOUR    = expand(os.path.join(TABLES_DIR, "{taxon}", "{collection}", "JASPAR_2022_{taxon}_{collection}_TF_class_colours.html"), taxon = TAXA, collection = COLLECTIONS)
 CLUSTERING_RADIAL       = expand(os.path.join(RESULTS_DIR, "JASPAR_2022_matrix_clustering", "{taxon}", "{collection}", "radial_trees", "JASPAR_2022_matrix_clustering_{taxon}_{collection}_tree_annotated.html"), taxon = TAXA, collection = COLLECTIONS)
-
+CLUSTERING_ARCHETYPES = expand(os.path.join(RESULTS_DIR, "JASPAR_2022_matrix_clustering", "{taxon}", "CORE", "archetypes", "JASPAR_2022_matrix_clustering_{taxon}_CORE_SUMMARY.html"), taxon = TAXA)
 
 rule all:
     input: PARSE_MOTIF_IDS,          \
            MOTIFS_METADATA,          \
+           ANNOTATION_TABLES,        \
            PARSE_ANNOTATION_TABLES,  \
-           CLUSTERING_INTERACTIVE,   \
            HTML_TF_CLASS_COLOUR,     \
-           CLUSTERING_RADIAL
-
-     
-
+           CLUSTERING_INTERACTIVE,   \
+           CLUSTERING_RADIAL,        \
+           CLUSTERING_ARCHETYPES
 
 
 ################################################################
@@ -87,8 +87,11 @@ rule parse_motif_IDs:
             "Parsing JASPAR 2022 {wildcards.taxon} motif IDs"
 	shell:
             """
-            perl -lne '$_ =~ s/\(/_/gi; s/\)/_/gi; s/\./_/gi; print $_;' {input} > {output}
+            perl -lne '$_ =~ s/\(/_/gi; s/\)/_/gi; s/\./_/gi; $_ =~ s/^ID MA\d+_\d+_(.+)$/ID $1/gi; print $_;' {input} > {output}
             """
+# perl -lne 'if($_ =~ /^ID/){{$_ =~ s/\./_/gi}}; $_ =~ s/^ID MA\d+_\d+_(.+)$/ID $1/gi; print $_;' {input} > {output}
+# perl -lne '$_ =~ s/\(/_/gi; s/\)/_/gi; s/\./_/gi; $_ =~ s/^ID MA\d+_\d+_(.+)$/ID $1/gi; print $_;' {input} > {output}
+     # perl -lne '$_ =~ s/^ID MA\d+_\d+_(.+)$/ID $1/gi; print $_;' {input} > {output}
 
 
      
@@ -130,7 +133,7 @@ rule JASPAR_2022_METADATA:
      """
      """
      input:
-          os.path.join(TABLES_DIR, "{taxon}", "{collection}")
+          os.path.join(MOTIFS_DIR, "{taxon}", "JASPAR_2022_{collection}_{taxon}.tf")
      output:
           os.path.join(TABLES_DIR, "{taxon}", "{collection}", "JASPAR_2022_info_{taxon}_table.tab")
      message:
@@ -226,3 +229,33 @@ rule CLUSTER_MATRICES_RADIAL:
         """
 
 
+
+
+################################################################
+## Generate clusters to build archetypes
+## Use restrictive thresholds to separate monomers and dimers  
+rule CLUSTER_MATRICES_HTML_REPORT_FOR_ARCHETYPES:
+    """  
+    """
+    input:
+        os.path.join(MOTIFS_DIR, "{taxon}", "JASPAR_2022_CORE_{taxon}.tf")
+    output:
+        os.path.join(RESULTS_DIR, "JASPAR_2022_matrix_clustering", "{taxon}", "CORE", "archetypes", "JASPAR_2022_matrix_clustering_{taxon}_CORE_SUMMARY.html")
+    message:
+        "Clustering JASPAR 2022 {wildcards.taxon} CORE - HTML report"
+    params: v      = "2", \
+	    prefix = os.path.join(RESULTS_DIR, "JASPAR_2022_matrix_clustering", "{taxon}", "CORE", "archetypes", "JASPAR_2022_matrix_clustering_{taxon}_CORE")
+    shell:
+        """
+        matrix-clustering -v {params.v}                         \
+          -matrix JASPAR_2022_{wildcards.taxon}_CORE {input} tf \
+          -hclust_method average                                \
+          -calc sum                                             \
+          -title "JASPAR 2022 {wildcards.taxon} CORE"           \
+          -metric_build_tree Ncor                               \
+          -lth w 5 -lth cor 0.8 -lth Ncor 0.6                   \
+          -label_in_tree name                                   \
+          -return json                                          \
+          -quick                                                \
+          -o {params.prefix}
+       """

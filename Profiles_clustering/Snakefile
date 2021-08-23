@@ -21,22 +21,25 @@ RESULTS_DIR = os.path.join(MAIN_DIR, "results")
 ## Parameters Variables (used in different rules)
 
 ## Taxa
-#TAXA = "vertebrates plants nematodes insects fungi urochordates".split()
-TAXA = "nematodes insects fungi urochordates".split()
-TAXA = "nematodes urochordates".split()
-#TAXA = "nematodes".split()
+TAXA = "vertebrates plants nematodes insects fungi urochordates".split()
+#TAXA = "nematodes  fungi urochordates".split()
+#TAXA = "insects fungi nematodes urochordates".split()
+#TAXA = "urochordates".split()
 
 ## Collection
 COLLECTIONS = "CORE UNVALIDATED".split()
-COLLECTIONS = "CORE".split()
 
 
 ################################################################
 ## One target to rule them all
 
+UNVALIDATED_IDS         = expand(os.path.join(MOTIFS_DIR, "JASPAR2022_UNVALIDATED_{taxon}_IDs.txt"), taxon = TAXA)
+#MOTIFS                  = expand(os.path.join(MOTIFS_DIR, "JASPAR_2022_{collection}_{taxon}.tf"), taxon = TAXA, collection = COLLECTIONS)
+MOTIFS_METADATA         = expand(os.path.join(TABLES_DIR, "{taxon}", "{collection}", "JASPAR_2022_info_{taxon}_{collection}_table.tab"), taxon = TAXA, collection = COLLECTIONS)
+
 PARSE_MOTIF_IDS         = expand(os.path.join(MOTIFS_DIR, "{taxon}", "JASPAR_2022_{collection}_{taxon}.tf"), taxon = TAXA, collection = COLLECTIONS)
 CLUSTERING_INTERACTIVE  = expand(os.path.join(RESULTS_DIR, "JASPAR_2022_matrix_clustering", "{taxon}", "{collection}", "interactive_trees", "JASPAR_2022_matrix_clustering_{taxon}_{collection}_SUMMARY.html"), taxon = TAXA, collection = COLLECTIONS)
-MOTIFS_METADATA         = expand(os.path.join(TABLES_DIR, "{taxon}", "{collection}", "JASPAR_2022_info_{taxon}_table.tab"), taxon = TAXA, collection = COLLECTIONS)
+
 ANNOTATION_TABLES       = expand(os.path.join(TABLES_DIR, "{taxon}", "{collection}", "JASPAR_2022_{taxon}_annotations.tsv"), taxon = TAXA, collection = COLLECTIONS)
 PARSE_ANNOTATION_TABLES = expand(os.path.join(TABLES_DIR, "{taxon}", "{collection}", "JASPAR_2022_{taxon}_{collection}_annotations_with_colours.tsv"), taxon = TAXA, collection = COLLECTIONS)
 HTML_TF_CLASS_COLOUR    = expand(os.path.join(TABLES_DIR, "{taxon}", "{collection}", "JASPAR_2022_{taxon}_{collection}_TF_class_colours.html"), taxon = TAXA, collection = COLLECTIONS)
@@ -44,7 +47,8 @@ CLUSTERING_RADIAL       = expand(os.path.join(RESULTS_DIR, "JASPAR_2022_matrix_c
 CLUSTERING_ARCHETYPES = expand(os.path.join(RESULTS_DIR, "JASPAR_2022_matrix_clustering", "{taxon}", "CORE", "archetypes", "JASPAR_2022_matrix_clustering_{taxon}_CORE_SUMMARY.html"), taxon = TAXA)
 
 rule all:
-    input: PARSE_MOTIF_IDS,          \
+    input: UNVALIDATED_IDS,          \
+           PARSE_MOTIF_IDS,          \           
            MOTIFS_METADATA,          \
            ANNOTATION_TABLES,        \
            PARSE_ANNOTATION_TABLES,  \
@@ -55,7 +59,7 @@ rule all:
 
 
 ################################################################
-## Download the motifs directly from the website
+## Download the CORE motifs directly from the website
 ## This is more robust than copy/pasting the files, in addition, once the DB is updated, this pipeline cna be easily re-launched
 rule download_JASPAR_CORE_motifs:
      """
@@ -63,7 +67,7 @@ rule download_JASPAR_CORE_motifs:
      input:
           os.path.join(DATA_DIR, "motifs")
      output:
-          os.path.join(MOTIFS_DIR, "JASPAR_2022_{collection}_{taxon}_non-redundant_pfms_transfac.txt")
+          os.path.join(MOTIFS_DIR, "JASPAR_2022_CORE_{taxon}_pfms.tf")
      message:
           "Downloading JASPAR CORE {wildcards.taxon} motifs"
      shell:
@@ -71,6 +75,75 @@ rule download_JASPAR_CORE_motifs:
           wget https://testjaspar.uio.no/download/data/2022/CORE/JASPAR2022_CORE_{wildcards.taxon}_non-redundant_pfms_transfac.txt -O {output}
           """
 
+
+################################################################
+## Download the Unvalidated motifs directly from the website
+## This is more robust than copy/pasting the files, in addition, once the DB is updated, this pipeline cna be easily re-launched
+rule download_JASPAR_UNVALIDATED_motifs:
+     """
+     """
+     input:
+          os.path.join(DATA_DIR, "motifs")
+     output:
+          os.path.join(MOTIFS_DIR, "JASPAR2022_UNVALIDATED_pfms.tf")
+     message:
+          "Downloading JASPAR Unvalidated motifs"
+     shell:
+          """
+          wget https://testjaspar.uio.no/download/data/2022/collections/JASPAR2022_UNVALIDATED_redundant_pfms_transfac.txt -O {output}
+          """
+
+
+################################################################
+## Get a list of Unvalidated motif IDs and their taxon
+## This information is directly obtained from the transfac file
+rule list_unvalidated_IDs_per_taxon:
+     """
+     """
+     input:
+          os.path.join(MOTIFS_DIR, "JASPAR2022_UNVALIDATED_pfms.tf")
+     output:
+          os.path.join(MOTIFS_DIR, "JASPAR2022_UNVALIDATED_{taxon}_IDs.txt")
+     message:
+          "Map JASPAR Unvalidated motifs with their IDs : {wildcards.taxon}"
+     shell:
+          """
+          more {input} | perl -lne 'if($_ =~ /^ID\s+(UN\d+\.\d+).+/){{ $ID =  $1;}} if($_ =~ /tax_group/) {{ $Tax =  $_;}} $line =  $ID."\\t".$Tax; $line =~ s/^ID\s+//gi; $line =~ s/CC tax_group://gi; print $line; ' | sort | uniq | grep {wildcards.taxon} > {output} 
+          """
+
+
+
+################################################################
+## Get a list of Unvalidated motif IDs and their taxon
+## Returns a tranfac file containing the motifs indicated in the ID table
+rule Unvalidate_motifs_per_taxon:
+     """
+     """
+     input:
+          ids    = os.path.join(MOTIFS_DIR, "JASPAR2022_UNVALIDATED_{taxon}_IDs.txt"),
+          motifs = os.path.join(MOTIFS_DIR, "JASPAR2022_UNVALIDATED_pfms.tf")
+     output:
+          os.path.join(MOTIFS_DIR, "JASPAR_2022_UNVALIDATED_{taxon}_non-redundant_pfms_transfac.txt")
+     message:
+          "Extracting Unvalidated motifs for {wildcards.taxon}"
+     shell:
+          """
+          convert-matrix -i {input.motifs} -from tf -to tf -matrix_id_file {input.ids} > {output}
+          """
+
+
+rule JASPAR_2022_CORE_MOTIF_RENAMED:
+     """
+     """
+     input:
+          os.path.join(MOTIFS_DIR, "JASPAR_2022_CORE_{taxon}_pfms.tf")
+     output:
+          os.path.join(MOTIFS_DIR, "JASPAR_2022_CORE_{taxon}_non-redundant_pfms_transfac.txt")
+
+     shell:
+          """
+          cat {input} > {output}
+          """
 
 
 ################################################################
@@ -82,19 +155,140 @@ rule parse_motif_IDs:
 	input:
             os.path.join(MOTIFS_DIR, "JASPAR_2022_{collection}_{taxon}_non-redundant_pfms_transfac.txt")
 	output:
-            os.path.join(MOTIFS_DIR, "{taxon}", "JASPAR_2022_{collection}_{taxon}.tf")
+            os.path.join(MOTIFS_DIR, "{taxon}", "JASPAR_2022_{collection}_{taxon}_cat.tf")
 	message:
             "Parsing JASPAR 2022 {wildcards.taxon} motif IDs"
 	shell:
             """
             perl -lne '$_ =~ s/\(/_/gi; s/\)/_/gi; s/\./_/gi; $_ =~ s/^ID MA\d+_\d+_(.+)$/ID $1/gi; print $_;' {input} > {output}
             """
-# perl -lne 'if($_ =~ /^ID/){{$_ =~ s/\./_/gi}}; $_ =~ s/^ID MA\d+_\d+_(.+)$/ID $1/gi; print $_;' {input} > {output}
-# perl -lne '$_ =~ s/\(/_/gi; s/\)/_/gi; s/\./_/gi; $_ =~ s/^ID MA\d+_\d+_(.+)$/ID $1/gi; print $_;' {input} > {output}
-     # perl -lne '$_ =~ s/^ID MA\d+_\d+_(.+)$/ID $1/gi; print $_;' {input} > {output}
 
+
+################################################################
+## Concatenate CORE + UNVALIDATED motifs in a single file
+## Note: when matrix-clustering is called we use two wildcards : CORE + UNVALIDATED
+## CORE corresponds to the actual CORE motifs; UNVALIDATED is the union of the CORE and the UNVALIDATED motifs
+rule CONCAT_JASPAR_2022_CORE_MOTIFS:
+     """
+     """
+     input:
+          os.path.join(MOTIFS_DIR, "{taxon}", "JASPAR_2022_CORE_{taxon}_cat.tf")
+     output:
+          os.path.join(MOTIFS_DIR, "{taxon}", "JASPAR_2022_CORE_{taxon}.tf")
+     shell:
+          """
+          cat {input} > {output}
+          """
+
+
+rule CONCAT_JASPAR_2022_UNVALIDATED_MOTIFS:
+     """
+     """
+     input:
+          unvalidated = os.path.join(MOTIFS_DIR, "{taxon}", "JASPAR_2022_UNVALIDATED_{taxon}_cat.tf"),
+          core        = os.path.join(MOTIFS_DIR, "{taxon}", "JASPAR_2022_CORE_{taxon}_cat.tf")
+     output:
+          os.path.join(MOTIFS_DIR, "{taxon}", "JASPAR_2022_UNVALIDATED_{taxon}.tf")
+     shell:
+          """
+          cat {input.core} {input.unvalidated} > {output}
+          """
+
+
+
+################################################################
+## Download JASPAR 2022 metadata table
+## NOTE: for future releases, before running the clustering the script called in this rule must be ready
+rule JASPAR_2022_METADATA:
+     """
+     """
+     input:
+          os.path.join(MOTIFS_DIR, "{taxon}", "JASPAR_2022_{collection}_{taxon}.tf")
+     output:
+          os.path.join(TABLES_DIR, "{taxon}", "{collection}", "JASPAR_2022_info_{taxon}_{collection}_table.tab")
+     message:
+          "Downloading metadata {wildcards.taxon} {wildcards.collection}"
+     params:
+          out_dir = os.path.join(TABLES_DIR, "{taxon}", "{collection}")
+     shell:
+          """
+          Rscript bin/Retrieve_matrix_information_from_JASPAR2022.R --taxon {wildcards.taxon} --collection {wildcards.collection} --output_directory {params.out_dir}
+          """
+
+
+################################################################
+## 
+rule JASPAR_2022_METADATA_CORE_PARSED:
+     """
+     """
+     input:
+          os.path.join(TABLES_DIR, "{taxon}", "CORE", "JASPAR_2022_info_{taxon}_CORE_table.tab")
+     output:
+          os.path.join(TABLES_DIR, "{taxon}", "CORE", "JASPAR_2022_info_{taxon}_CORE_table_parsed.tab")
+
+     shell:
+          """
+          cat {input} > {output}
+          """
+
+
+rule JASPAR_2022_METADATA_UNVALIDATED_PARSED:
+     """
+     """
+     input:
+          core        = os.path.join(TABLES_DIR, "{taxon}", "CORE", "JASPAR_2022_info_{taxon}_CORE_table.tab"),
+          unvalidated = os.path.join(TABLES_DIR, "{taxon}", "UNVALIDATED", "JASPAR_2022_info_{taxon}_UNVALIDATED_table.tab")
+     output:
+          os.path.join(TABLES_DIR, "{taxon}", "UNVALIDATED", "JASPAR_2022_info_{taxon}_UNVALIDATED_table_parsed.tab")
+     shell:
+          """
+          cat {input.core} {input.unvalidated} > {output}
+          """
 
      
+################################################################
+## Generate the annotation table, as required by matrix-clutering for generating the radial tree
+rule JASPAR_2022_ANNOTATION_TAB:
+     """
+     """
+     input:
+          os.path.join(TABLES_DIR, "{taxon}", "{collection}", "JASPAR_2022_info_{taxon}_{collection}_table_parsed.tab")
+     output:
+          os.path.join(TABLES_DIR, "{taxon}", "{collection}", "JASPAR_2022_{taxon}_annotations.tsv")
+     message:
+          "Generating annotation table for display TF class info in the radial tree : {wildcards.taxon} {wildcards.collection}"
+     shell:
+          """
+          more {input} | grep {wildcards.taxon} | awk -F "\\t" '{{ print $1"."$2"\\t"$3"\\thttps://testjaspar.uio.no/matrix/"$1"."$2"/\\t#\\t"$6}}' | sed '1 i\matrix_id\\tname\\tURL\\tcolour\\tclass' > {output}
+          """
+
+
+################################################################
+## Assign colors to the TF families (for the outter ring and background in the radial tree)
+## Creates an HTML table with the legend (this has to be manually added to the html file with the radial tree)
+rule assign_TF_class_colours:
+	"""
+	"""
+	input:
+            os.path.join(TABLES_DIR, "{taxon}", "{collection}", "JASPAR_2022_{taxon}_annotations.tsv")
+	output:
+            annotation     = os.path.join(TABLES_DIR, "{taxon}", "{collection}", "JASPAR_2022_{taxon}_{collection}_annotations_with_colours.tsv"), \
+            annotation_rad = os.path.join(TABLES_DIR, "{taxon}", "{collection}", "JASPAR_2022_{taxon}_{collection}_annotations_radial_tree.tsv"), \
+            html_table     = os.path.join(TABLES_DIR, "{taxon}", "{collection}", "JASPAR_2022_{taxon}_{collection}_TF_class_colours.html")
+	message:
+            "Assigning TF class <-> colours for JASPAR 2022 {wildcards.taxon} {wildcards.collection}"
+	shell:
+            """
+            Rscript bin/TF_Family_color_assignation.R -i {input} -o {output.annotation} -c {output.html_table} -r {output.annotation_rad} -d JASPAR_2022_{wildcards.taxon}_{wildcards.collection} ;
+            """
+
+
+
+################################################################################################################################################################################################################################################################
+################################################################################################################################################################################################################################################################
+
+
+          
 ################################################################
 ## Generate the interactive HTML reports with dynamic trees
 rule CLUSTER_MATRICES_HTML_REPORT:
@@ -123,67 +317,6 @@ rule CLUSTER_MATRICES_HTML_REPORT:
           -o {params.prefix}
        """
 
-
-
-
-################################################################
-## Download JASPAR 2022 metadata table
-## NOTE: for future releases, before running the clustering the script called in this rule must be ready
-rule JASPAR_2022_METADATA:
-     """
-     """
-     input:
-          os.path.join(MOTIFS_DIR, "{taxon}", "JASPAR_2022_{collection}_{taxon}.tf")
-     output:
-          os.path.join(TABLES_DIR, "{taxon}", "{collection}", "JASPAR_2022_info_{taxon}_table.tab")
-     message:
-          "Downloading metadata {wildcards.taxon} {wildcards.collection}"
-     params:
-          out_dir = os.path.join(TABLES_DIR, "{taxon}", "{collection}")
-     shell:
-          """
-          Rscript bin/Retrieve_matrix_information_from_JASPAR2022.R -t {wildcards.taxon} -o {params.out_dir}
-          """
-
-     
-################################################################
-## Generate the annotation table, as required by matrix-clutering for generating the radial tree
-rule JASPAR_2022_ANNOTATION_TAB:
-     """
-     """
-     input:
-          os.path.join(TABLES_DIR, "{taxon}", "{collection}", "JASPAR_2022_info_{taxon}_table.tab")
-     output:
-          os.path.join(TABLES_DIR, "{taxon}", "{collection}", "JASPAR_2022_{taxon}_annotations.tsv")
-     message:
-          "Generating annotation table for display TF class info in the radial tree : {wildcards.taxon} {wildcards.collection}"
-     shell:
-          """
-          more {input} | grep {wildcards.taxon} | awk -F "\\t" '{{ print $1"."$2"\\t"$3"\\thttps://testjaspar.uio.no/matrix/"$1"."$2"/\\t#\\t"$6}}' | sed '1 i\matrix_id\\tname\\tURL\\tcolour\\tclass' > {output}
-          """
-
-
-
-
-
-################################################################
-## Assign colors to the TF families (for the outter ring and background in the radial tree)
-## Creates an HTML table with the legend (this has to be manually added to the html file with the radial tree)
-rule assign_TF_class_colours:
-	"""
-	"""
-	input:
-            os.path.join(TABLES_DIR, "{taxon}", "{collection}", "JASPAR_2022_{taxon}_annotations.tsv")
-	output:
-            annotation     = os.path.join(TABLES_DIR, "{taxon}", "{collection}", "JASPAR_2022_{taxon}_{collection}_annotations_with_colours.tsv"), \
-            annotation_rad = os.path.join(TABLES_DIR, "{taxon}", "{collection}", "JASPAR_2022_{taxon}_{collection}_annotations_radial_tree.tsv"), \
-            html_table     = os.path.join(TABLES_DIR, "{taxon}", "{collection}", "JASPAR_2022_{taxon}_{collection}_TF_class_colours.html")
-	message:
-            "Assigning TF class <-> colours for JASPAR 2022 {wildcards.taxon} {wildcards.collection}"
-	shell:
-            """
-            Rscript bin/TF_Family_color_assignation.R -i {input} -o {output.annotation} -c {output.html_table} -r {output.annotation_rad} -d JASPAR_2022_{wildcards.taxon}_{wildcards.collection} ;
-            """
 
 
 ################################################################
@@ -228,8 +361,7 @@ rule CLUSTER_MATRICES_RADIAL:
         Rscript annotate_matrix-clustering.R --annotation {input.color_table} --input {params.tree_folder} ;
         """
 
-
-
+     
 
 ################################################################
 ## Generate clusters to build archetypes

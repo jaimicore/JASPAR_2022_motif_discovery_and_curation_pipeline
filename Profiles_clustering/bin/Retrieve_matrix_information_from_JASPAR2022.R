@@ -22,17 +22,20 @@ for (lib in required.libraries) {
 message("; Reading arguments from command-line")
 option_list = list(
   make_option( c("-t", "--taxon"), type = "character", default = "Vertebrates", help = "Taxon available in JASPAR: Vertebrates | Plants | Fungi | Insects | Nematodes | Urochordata", metavar = "character"),
+  make_option( c("-c", "--collection"), type = "character", default = "CORE", help = "Taxon available in JASPAR: CORE | UNVALIDATED", metavar = "character"),
   make_option( c("-o", "--output_directory"), type = "character", default = ".", help = "Output folder", metavar = "character")
 )
 
 opt_parser = OptionParser(option_list = option_list);
 opt = parse_args(opt_parser);
 
-taxon        <- opt$taxon
-out.folder   <- opt$output_directory
+taxon      <- opt$taxon
+collection <- opt$collection
+out.folder <- opt$output_directory
 
 # ## Debug:
 # taxon <- "Nematodes"
+# collection <- "UNVALIDATED"
 # out.folder <- "/run/user/316574/gvfs/sftp:host=biotin2.hpc.uio.no/storage/mathelierarea/processed/ieva/projects/JASPAR_2022"
 ###############################
 ## Creating output directory ##
@@ -44,10 +47,11 @@ dir.create(out.folder, showWarnings = F, recursive = T)
 ## Retrieving information from API ##
 #####################################
 
-message("; Retrieving information from Jaspar API.")
+message("; Retrieving information from Jaspar API. Taxon: ", taxon, " - Collection: ", collection)
 
 ## Getting the page size:
-initial.jaspar.url <- file.path("http://testjaspar.uio.no/api/v1/matrix/?collection=CORE&?tax_group=", taxon, "&version=latest")
+initial.jaspar.url <- file.path(paste0("http://testjaspar.uio.no/api/v1/matrix/?collection=", collection, "&?tax_group="), taxon, "&version=latest")
+# initial.jaspar.url <- file.path("http://testjaspar.uio.no/api/v1/matrix/?collection=Unvalidated&?tax_group=", taxon, "&version=latest")
 # initial.jaspar.url <- paste0("http://testjaspar.uio.no/api/v1/matrix/?collection=CORE&?tax_group=", taxon, "&version=latest")
 initial_result <- fromJSON(initial.jaspar.url)
 nb_matrices <- initial_result$count
@@ -61,7 +65,7 @@ for (i in 1:nb_pages) {
   message("; Quering page number: ", i)
   
   ## Requesting all matrices:
-  jaspar.url <- paste0("http://testjaspar.uio.no/api/v1/matrix/?page=", i, "&page_size=1000&collection=CORE&?tax_group=", taxon, "&version=latest&?format=json")
+  jaspar.url <- paste0("http://testjaspar.uio.no/api/v1/matrix/?page=", i, "&page_size=1000&collection=", collection, "&?tax_group=", taxon, "&version=latest&?format=json")
   result <- fromJSON(jaspar.url)
   
   #print(result$results$matrix_id)
@@ -148,7 +152,7 @@ for (i in 1:nb_pages) {
 complete_profiles_tab <- do.call("rbind", complete_profiles_tab)
 
 message("; Exporting table")
-fwrite(complete_profiles_tab, sep = "\t", file = file.path(out.folder, paste0("JASPAR_2022_info_", taxon,"_table.tab")))
+fwrite(complete_profiles_tab, sep = "\t", file = file.path(out.folder, paste0("JASPAR_2022_info_", taxon,"_", collection, "_table.tab")))
 
 ###################
 ## End of script ##

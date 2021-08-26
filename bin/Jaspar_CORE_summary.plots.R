@@ -50,7 +50,7 @@ plotly.export             <- as.numeric(opt$plotly_server)
 motifs.per.taxon.tab <- fread(motifs.per.taxon.tab.file)
 
 ## Add column with the total number of motifs
-motifs.per.taxon.tab$All_taxa <- rowSums(motifs.per.taxon.tab[,c("Vertebrates", "Plants", "Insects", "Nematodes", "Fungi", "Urochordata")],na.rm = T)
+motifs.per.taxon.tab$All_taxa <- rowSums(motifs.per.taxon.tab[,c("Vertebrates", "Plants", "Insects", "Nematodes", "Fungi", "Urochordates")],na.rm = T)
 
 ## Get the year of the latest release
 release.year <- max(motifs.per.taxon.tab$Year)
@@ -64,12 +64,12 @@ nb.motfs.per.release$Year <- rep(motifs.per.taxon.tab$Year, 7)
 nb.motfs.per.release$Year <- ordered(nb.motfs.per.release$Year, levels = as.vector(unique(nb.motfs.per.release$Year)))
 
 ## Order factors by number of motifs
-nb.motfs.per.release$Taxon <- factor(nb.motfs.per.release$Taxon, levels = as.vector(c("All_taxa", "Vertebrates", "Plants", "Fungi", "Insects", "Nematodes", "Urochordata")))
+nb.motfs.per.release$Taxon <- factor(nb.motfs.per.release$Taxon, levels = as.vector(c("All_taxa", "Vertebrates", "Plants", "Fungi", "Insects", "Nematodes", "Urochordates")))
 
 ## Define color palette
 taxon.colors <- colorRampPalette(brewer.pal(7, "Dark2"), space = "Lab")(length(unique(nb.motfs.per.release$Taxon)))
 cols <- c( "#666666", taxon.colors)
-names(cols) <- c("All_taxa", "Vertebrates", "Plants", "Fungi", "Insects", "Nematodes", "Urochordata")
+names(cols) <- c("All_taxa", "Vertebrates", "Plants", "Fungi", "Insects", "Nematodes", "Urochordates")
 
 
 ################

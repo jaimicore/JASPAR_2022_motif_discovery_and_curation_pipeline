@@ -8,6 +8,7 @@ required.libraries <- c("data.table",
                         "plotly",
                         "RColorBrewer",
                         "reshape2",
+                        "rcartocolor",
                         "tidyr")
 
 for (lib in required.libraries) {
@@ -41,8 +42,8 @@ opt = parse_args(opt_parser);
 results.dir               <- opt$output_directory
 motifs.per.taxon.tab.file <- opt$input_table
 plotly.export             <- as.numeric(opt$plotly_server)
-# motifs.per.taxon.tab.file <- "/home/jamondra/Downloads/Motifs_per_taxon_per_release.txt"
-# results.dir               <- "/home/jamondra/Downloads/JASPAR_2022_plots"
+motifs.per.taxon.tab.file <- "/home/jamondra/Downloads/Motifs_per_taxon_per_release.txt"
+results.dir               <- "/home/jamondra/Downloads/JASPAR_2022_plots"
 
 dir.create(results.dir, showWarnings = F, recursive = T)
 
@@ -56,6 +57,7 @@ motifs.per.taxon.tab$All_taxa <- rowSums(motifs.per.taxon.tab[,c("Vertebrates", 
 
 ## Get the year of the latest release
 release.year <- max(motifs.per.taxon.tab$Year, na.rm = T)
+releases     <- as.vector(na.omit(motifs.per.taxon.tab$Year))
 
 ## Convert the matrix in a data.frame
 nb.motfs.per.release <- data.frame(melt(motifs.per.taxon.tab[,c(-2)], id.vars = c("Collection", "Year")))
@@ -69,33 +71,39 @@ nb.taxa <- length(as.vector(unique(nb.motfs.per.release$Taxon)))
 nb.motfs.per.release$Year <- rep(motifs.per.taxon.tab$Year, nb.taxa)
 nb.motfs.per.release$Year <- ordered(nb.motfs.per.release$Year, levels = as.vector(unique(nb.motfs.per.release$Year)))
 
+
+##########################
+## Create color palette ##
+##########################
+
+## Determine order of taxon (descending, depending on the number of motifs)
+taxon.order.CORE        <- subset(nb.motfs.per.release, Year == release.year & Collection == "CORE" & Taxon != "All_taxa") %>%
+                            drop_na(Year, Nb_motifs) %>% 
+                            arrange(desc(Nb_motifs))
+taxon.order.CORE        <- as.vector(taxon.order.CORE$Taxon)
+
+
+taxon.order.UNVALIDATED <- subset(nb.motfs.per.release, Year == release.year & Collection == "UNVALIDATED" & Taxon != "All_taxa") %>%
+  drop_na(Year, Nb_motifs) %>% 
+  arrange(desc(Nb_motifs))
+taxon.order.UNVALIDATED <- as.vector(taxon.order.UNVALIDATED$Taxon)
+
+taxon.order <- unique(c(taxon.order.CORE, taxon.order.UNVALIDATED))
+
+tax.cols     <- carto_pal(length(taxon.order), "Bold")
+cols         <- c( "#666666", tax.cols)
+names(cols)  <- c("All_taxa", taxon.order)
+
 ## Order factors by number of motifs
 nb.motfs.per.release$Taxon <- factor(nb.motfs.per.release$Taxon, levels = as.vector(c("All_taxa",
-                                                                                      "Vertebrates",
-                                                                                      "Plants",
-                                                                                      "Fungi",
-                                                                                      "Insects",
-                                                                                      "Nematodes",
-                                                                                      "Urochordates",
-                                                                                      "Cnidaria",
-                                                                                      "Protozoa",
-                                                                                      "Trematodes")))
-
-## Define color palette
-taxon.colors <- colorRampPalette(brewer.pal(7, "Dark2"), space = "Lab")(nb.taxa - 1)
-cols         <- c( "#666666", taxon.colors)
-names(cols)  <- c("All_taxa",
-                  "Vertebrates",
-                  "Plants",
-                  "Fungi",
-                  "Insects",
-                  "Nematodes",
-                  "Urochordates",
-                  "Cnidaria",
-                  "Protozoa",
-                  "Trematodes")
+                                                                                      taxon.order)))
 
 
+
+
+######################################################
+## Generate plots: CORE and UNVALIDATED collections ##
+######################################################
 
 for (collection in c("CORE", "UNVALIDATED")) {
   
@@ -107,7 +115,7 @@ for (collection in c("CORE", "UNVALIDATED")) {
   nb.motfs.per.release.gg <- nb.motfs.per.release %>% 
                                 dplyr::filter(Collection == collection) %>% 
                                 drop_na(Year, Nb_motifs) %>% 
-                             ggplot(aes(x = Year, y = Nb_motifs, color = Taxon, group = Taxon)) +
+                             ggplot(aes(x = as.factor(Year), y = Nb_motifs, color = Taxon, group = Taxon)) +
                                 geom_line(size = 2) +
                                 geom_point(size = 4, shape = 21, fill = "white") + 
                                 scale_colour_manual(values = cols) +
@@ -157,7 +165,7 @@ for (collection in c("CORE", "UNVALIDATED")) {
     add_pie(hole = 0.6) %>%
     layout(title = paste0("JASPAR ", release.year, " ", collection),  showlegend = TRUE,
            xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = TRUE),
-           yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = TRUE), colorway = taxon.colors)
+           yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = TRUE), colorway = tax.cols)
   
   htmlwidgets::saveWidget(jaspar.donut, file.path(results.dir, paste0("Jaspar_", collection, "_", release.year,"_pie-donut.html")))
   message("; Donut chart ready")
@@ -172,7 +180,7 @@ for (collection in c("CORE", "UNVALIDATED")) {
                     drop_na(Year, Nb_motifs) %>% 
                  ggplot(aes(x=Year, y=Nb_motifs, fill=Taxon)) +
                     geom_bar(stat = "identity", position = "stack") +
-                    scale_fill_brewer(palette = "Dark2") +
+                    scale_fill_manual(values = cols) +
                     theme_classic() +
                     theme(text = element_text(size = 15),
                           axis.text.x = element_text(angle = 45, hjust = 1, size = 20),

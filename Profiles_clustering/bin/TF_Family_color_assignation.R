@@ -4,7 +4,7 @@
 required.libraries <- c("data.table",
                         "dplyr",
                         "optparse",
-                        "RColorBrewer")
+                        "rcartocolor")
 
 for (lib in required.libraries) {
   if (!require(lib, character.only = TRUE)) {
@@ -66,25 +66,46 @@ jaspar.tab$matrix_id <- gsub(jaspar.tab$matrix_id, pattern = "\\.", replacement 
 jaspar.tab$class <- gsub(jaspar.tab$class, pattern = ",.+$", replacement = "", perl = T)
 jaspar.tab$class <- gsub(jaspar.tab$class, pattern = "::.+$", replacement = "", perl = T)
 
-# table(jaspar.tab$class)
-# View(jaspar.tab)
+## Add the 'Unknown' TF class to entries without a class
+jaspar.tab$class <- ifelse(jaspar.tab$class == "", yes = "Unknown", no = jaspar.tab$class)
+
+
+## Get the TF class names ordered by number of motifs
+TF.class.order <- jaspar.tab %>% 
+                    group_by(class) %>% 
+                    tally() %>% 
+                    arrange(desc(n)) %>% 
+                    dplyr::filter(class != "Unknown")
+TF.class.order <- TF.class.order$class
+
 
 ##################################
 ## TF class - Color assignation ##
 ##################################
 message("; Assigning colours to TF classes")
-TF.classes <- as.vector(unique(jaspar.tab$class))
-TF.classes.nb <- length(TF.classes)
 
-nb.seed.colors <- ifelse(TF.classes.nb < 8,
-                         yes = TF.classes.nb,
-                         no = 8)
+TF.known.classes    <- TF.class.order
+TF.known.classes.nb <- length(TF.known.classes)
+
+## Grey color for Unknown class
+unknown.class.color <- "#888888"
+
+nb.classes.palette <- 12  ## We want to use the first 12 colors of the Safe palette
+nb.seed.colors     <- ifelse(TF.known.classes.nb < nb.classes.palette,
+                             yes = TF.known.classes.nb,
+                             no = nb.classes.palette)
   
-## Dark2 palette seed max = 8
-class.colors <- colorRampPalette(brewer.pal(nb.seed.colors, "Dark2"), space="Lab")(TF.classes.nb)
-names(class.colors) <- TF.classes
+## Generate a carto palette (remove gray value)
+carto.pal.classes  <- carto_pal(nb.seed.colors, "Safe")
+carto.pal.classes  <- carto.pal.classes[which(carto.pal.classes != "#888888")]
 
-df.class.colour <- data.frame(colour = class.colors, class = names(class.colors))
+## Expand the color palette and add the gray color at the end
+class.colors        <- c(colorRampPalette(carto.pal.classes, space = "Lab")(TF.known.classes.nb),
+                         unknown.class.color)
+names(class.colors) <- c(TF.known.classes, "Unknown")
+df.class.colour     <- data.frame(colour   = class.colors,
+                                  class    = names(class.colors),
+                                  class_nb = seq_len(TF.known.classes.nb + 1))
 
 
 ##########################################
@@ -92,8 +113,8 @@ df.class.colour <- data.frame(colour = class.colors, class = names(class.colors)
 ##########################################
 
 ## Table header + tail
-head.tab <- "<div id='Color_class_tab' style='display: inline-block;float:left;position:relative;' class='color-legend' width='450px'><p style='font-size:12px;padding:0px;border:0px'><b></b></p><table id='Color_class_table' class='hover compact stripe' cellspacing='0' width='450px' style='padding:15px;align:center;'><thead><tr><th > Color </th><th> TF Class </th> </tr></thead><tbody>"
-tab.lines <- paste("\n<tr><td class='color-box' style='background-color: --color--';></td><td>--TFClass--</td></tr>", collapse = "")
+head.tab <- "<div id='Color_class_tab' style='display: inline-block;float:left;position:relative;' class='color-legend' width='450px'><p style='font-size:12px;padding:0px;border:0px'><b></b></p><table id='Color_class_table' class='hover compact stripe' cellspacing='0' width='450px' style='padding:15px;align:center;'><thead><tr><th > Color </th> <th> TF Class </th> <th>TF Class #</th> </tr></thead><tbody>"
+tab.lines <- paste("\n<tr><td class='color-box' style='background-color: --color--';></td> <td>--TFClass--</td> <td>--TFClass_ID--</td> </tr>", collapse = "")
 tail.tab <- "<tr><td class='non_validated'>*</td><td>Non-validated</td></tr></tbody></table></div>"
 
 ## Table body
@@ -102,10 +123,12 @@ table.body <- sapply(1:nrow(df.class.colour), function(r.nb){
   ## Set variables
   tab.lines.current.line <- tab.lines
   TF.class.Color <- df.class.colour[r.nb,1]
-  TF.class.Name <- df.class.colour[r.nb,2]
+  TF.class.Name  <- df.class.colour[r.nb,2]
+  TF.class.ID    <- df.class.colour[r.nb,3]
   
   tab.lines.current.line <- gsub("--TFClass--", TF.class.Name, tab.lines.current.line)
   tab.lines.current.line <- gsub("--color--", TF.class.Color, tab.lines.current.line)
+  tab.lines.current.line <- gsub("--TFClass_ID--", TF.class.ID, tab.lines.current.line)
   
 })
 table.body <- paste(table.body, collapse = "")
@@ -121,7 +144,7 @@ writeLines(html.table, jaspar.html.tab.colour)
 jaspar.tab.colour <- merge(jaspar.tab, df.class.colour, by = "class")
 
 ## Order columns
-jaspar.tab.colour    <- jaspar.tab.colour[,c("matrix_id", "URL", "colour", "class", "name")]
+jaspar.tab.colour    <- jaspar.tab.colour[,c("matrix_id", "URL", "colour", "class", "name", "class_nb")]
 jaspar.tab.colour$DB <- jaspar.collection.name
 fwrite(jaspar.tab.colour, file = jaspar.tab.colour.file, sep = "\t", quote = FALSE)
 message("; Exported output table: ", jaspar.tab.colour.file)

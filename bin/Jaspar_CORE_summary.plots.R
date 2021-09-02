@@ -42,8 +42,8 @@ opt = parse_args(opt_parser);
 results.dir               <- opt$output_directory
 motifs.per.taxon.tab.file <- opt$input_table
 plotly.export             <- as.numeric(opt$plotly_server)
-motifs.per.taxon.tab.file <- "/home/jamondra/Downloads/Motifs_per_taxon_per_release.txt"
-results.dir               <- "/home/jamondra/Downloads/JASPAR_2022_plots"
+# motifs.per.taxon.tab.file <- "/home/jamondra/Downloads/Motifs_per_taxon_per_release.txt"
+# results.dir               <- "/home/jamondra/Downloads/JASPAR_2022_plots"
 
 dir.create(results.dir, showWarnings = F, recursive = T)
 

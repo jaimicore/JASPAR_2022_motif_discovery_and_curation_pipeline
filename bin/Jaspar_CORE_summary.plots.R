@@ -53,7 +53,7 @@ dir.create(results.dir, showWarnings = F, recursive = T)
 motifs.per.taxon.tab <- fread(motifs.per.taxon.tab.file)
 
 ## Add column with the total number of motifs
-motifs.per.taxon.tab$All_taxa <- rowSums(motifs.per.taxon.tab[,c("Vertebrates", "Plants", "Insects", "Nematodes", "Fungi", "Urochordates", "Cnidaria", "Protozoa", "Trematodes")],na.rm = T)
+motifs.per.taxon.tab$All_taxa <- rowSums(motifs.per.taxon.tab[,c("Vertebrates", "Plants", "Insects", "Nematodes", "Fungi", "Urochordates", "Cnidaria", "Dictyostelium", "Trematodes", "Oomycota")],na.rm = T)
 
 ## Get the year of the latest release
 release.year <- max(motifs.per.taxon.tab$Year, na.rm = T)

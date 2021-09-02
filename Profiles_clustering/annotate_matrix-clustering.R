@@ -14,6 +14,7 @@ option_list = list( make_option( c("-a", "--annotation"), type="character",  def
                                              "\t\t\t1\tName of the matrix collection\t:\tThe name should be identical to the matrix collection name used in the RSAT::matrix-clustering command.\n",
                                              "\t\t\t2\tID of the matrix\t:\tThe matrix ID should be identical to the one used in the collection as input in RSAT::matrix-clustering command.\n",
                                              "\t\t\t3\tColor code\t:\tHexadecimal color code associated to each matrix class.The color must be always provided betwen double quotes.\n",
+                                             "\t\t\t4\tColor code ID\t:\tA unique integer number associated to each matrix class.\n",
                                              "\t\tPlease ensure in all moment that no special characters from regular expressions are included in the name."), metavar="character"),
                     make_option( c("-i", "--input"),      type="character",  default=NULL, 
                                  help=paste0("Mandatory option. Name of the output directory produced by RSAT::matrix-clustering containing the radial tree.\n",
@@ -110,7 +111,7 @@ print(paste0("; INFO Successful read of file containing matrix annotation inform
 
 
 # Name columns
-colnames(annotation.df) <- c("collection_name", "matrix_name", "class")
+colnames(annotation.df) <- c("collection_name", "matrix_name", "class", "class_nb")
 
 # Unquote columns
 annotation.df$collection_name <- gsub("\"","",as.character(annotation.df$collection_name))

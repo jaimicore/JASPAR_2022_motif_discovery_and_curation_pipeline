@@ -6,7 +6,7 @@ required.libraries <- c("data.table",
                         "ggplot2",
                         "optparse",
                         "plotly",
-                        "RColorBrewer",
+                        # "RColorBrewer",
                         "reshape2",
                         "rcartocolor",
                         "tidyr")
@@ -42,10 +42,20 @@ opt = parse_args(opt_parser);
 results.dir               <- opt$output_directory
 motifs.per.taxon.tab.file <- opt$input_table
 plotly.export             <- as.numeric(opt$plotly_server)
+
+
 # motifs.per.taxon.tab.file <- "/home/jamondra/Downloads/Motifs_per_taxon_per_release.txt"
 # results.dir               <- "/home/jamondra/Downloads/JASPAR_2022_plots"
+# plotly.export <- 1
 
 dir.create(results.dir, showWarnings = F, recursive = T)
+
+#################################################
+## Set environment variable for plotly API key ##
+#################################################
+Sys.setenv("plotly_username" = "jaimicore")
+Sys.setenv("plotly_api_key"  = "your_api_key")  ## https://plot.ly/settings/api
+
 
 ##########################################
 ## Read JASPAR motifs per release table ##
@@ -53,7 +63,7 @@ dir.create(results.dir, showWarnings = F, recursive = T)
 motifs.per.taxon.tab <- fread(motifs.per.taxon.tab.file)
 
 ## Add column with the total number of motifs
-motifs.per.taxon.tab$All_taxa <- rowSums(motifs.per.taxon.tab[,c("Vertebrates", "Plants", "Insects", "Nematodes", "Fungi", "Urochordates", "Cnidaria", "Dictyostelium", "Trematodes", "Oomycota")],na.rm = T)
+motifs.per.taxon.tab$All_taxa <- rowSums(motifs.per.taxon.tab[,c("Vertebrates", "Plants", "Insects", "Nematodes", "Fungi", "Urochordata", "Cnidaria", "Dictyostelium", "Trematodes", "Oomycota")],na.rm = T)
 
 ## Get the year of the latest release
 release.year <- max(motifs.per.taxon.tab$Year, na.rm = T)
@@ -106,6 +116,7 @@ nb.motfs.per.release$Taxon <- factor(nb.motfs.per.release$Taxon, levels = as.vec
 ######################################################
 
 for (collection in c("CORE", "UNVALIDATED")) {
+# for (collection in c("CORE")) {
   
   message("; Plots for JASPAR ", collection, " collection")
   
@@ -200,36 +211,17 @@ for (collection in c("CORE", "UNVALIDATED")) {
   
   htmlwidgets::saveWidget(jaspar.bars, file.path(results.dir, paste0("Jaspar_", collection, "_", release.year,"_growth_barplot.html")))
   message("; Bar chart ready")
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-#########################################################
-## If required, upload the plots at the plotly website ##
-#########################################################
-if (plotly.export) {
   
-  ## Set environment variable for plotly API key
-  Sys.setenv("plotly_username" = "jaimicore")
-  Sys.setenv("plotly_api_key"  = "your_api_key")  ## https://plot.ly/settings/api
   
-  # Create a shareable link to the charts
-  # Set up API credentials: https://plot.ly/r/getting-started
-  api_create(nb.motfs.per.release.gg, filename = "JASPAR_CORE_growth_line_plot")
-  api_create(jaspar.donut, filename = paste0("Jaspar_", release.year, "_pie-donut"))
-  api_create(jaspar.bars, filename = paste0("Jaspar_", release.year, "_bars"))
+  #########################################################
+  ## If required, upload the plots at the plotly website ##
+  #########################################################
+  if (plotly.export) {
+    
+    # Create a shareable link to the charts
+    # Set up API credentials: https://plot.ly/r/getting-started
+    api_create(nb.motfs.per.release.gg, filename = paste0("JASPAR_", collection,"_growth_line_plot"))
+    api_create(jaspar.donut, filename = paste0("Jaspar_", release.year, "_", collection, "_pie-donut"))
+    api_create(jaspar.bars, filename = paste0("Jaspar_", release.year, "_", collection, "_bars"))
+  }
 }

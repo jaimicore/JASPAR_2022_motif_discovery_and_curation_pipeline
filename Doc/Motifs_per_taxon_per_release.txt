@@ -1,4 +1,4 @@
-Collection,Release,Year,Vertebrates,Plants,Insects,Nematodes,Fungi,Urochordates,Cnidaria,Trematodes,Dictyostelium,Oomycota
+Collection,Release,Year,Vertebrates,Plants,Insects,Nematodes,Fungi,Urochordata,Cnidaria,Trematodes,Dictyostelium,Oomycota
 CORE,1,2004,81,15,13,NA,NA,NA,NA,NA,NA,NA
 CORE,2,2006,89,18,13,NA,NA,1,NA,NA,NA,NA
 CORE,3,2008,101,21,14,NA,NA,1,NA,NA,NA,NA

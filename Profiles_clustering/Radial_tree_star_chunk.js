@@ -2,7 +2,13 @@
 // Insert after the oppening of the 'body' tag // 
 /////////////////////////////////////////////////
 
+<a href="https://chart-studio.plotly.com/~jaimicore/88" target="_blank"><img class="barplot" src="barplots/TF_classes_barplot_JASPAR_2022_insects_CORE+UNVALIDATED.jpeg" ></a>
+<a href="https://chart-studio.plotly.com/~jaimicore/92" target="_blank"><img class="barplot" src="barplots/TF_classes_barplot_JASPAR_2022_nematodes_CORE+UNVALIDATED.jpeg" ></a>
+<a href="https://chart-studio.plotly.com/~jaimicore/90" target="_blank"><img class="barplot" src="barplots/TF_classes_barplot_JASPAR_2022_urochordata_CORE+UNVALIDATED.jpeg" ></a>
+<a href="https://chart-studio.plotly.com/~jaimicore/86" target="_blank"><img class="barplot" src="barplots/TF_classes_barplot_JASPAR_2022_fungi_CORE+UNVALIDATED.jpeg" ></a>
+<a href="https://chart-studio.plotly.com/~jaimicore/84" target="_blank"><img class="barplot" src="barplots/TF_classes_barplot_JASPAR_2022_plants_CORE+UNVALIDATED.jpeg" ></a>
 <a href="https://chart-studio.plotly.com/~jaimicore/82" target="_blank"><img class="barplot" src="barplots/TF_classes_barplot_JASPAR_2022_vertebrates_CORE+UNVALIDATED.jpeg" ></a>
+
 
 
 
@@ -13,6 +19,7 @@
   <li>Click on the <i>Direct/Reverse</i> buttons to change the motif orientation</li>
   <li>Ring colors: TF classes</li>
   <li>Branch colors: Clusters assigned by <a href="https://academic.oup.com/nar/article/45/13/e119/3862068" target="_blank">RSAT matrix-clustering<a> <br>See summary</li>
+  <li>Click on the barplot image above to open the interactive TF class barplot</li>
 </ul>
 </div>
 

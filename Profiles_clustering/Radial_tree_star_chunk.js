@@ -2,6 +2,11 @@
 // Insert after the oppening of the 'body' tag // 
 /////////////////////////////////////////////////
 
+<a href="https://chart-studio.plotly.com/~jaimicore/82" target="_blank"><img class="barplot" src="barplots/TF_classes_barplot_JASPAR_2022_vertebrates_CORE+UNVALIDATED.jpeg" ></a>
+
+
+
+
 <div style='position:absolute;top:525px;float:left;padding:0px;align:center;font-size:15px;border:0px' >
 <ul width='450px' style='padding-left:20px;border:0px;'>
   <li>Click on the TF name to open its corresponding link in JASPAR</li>

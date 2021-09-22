@@ -118,3 +118,35 @@
 //////////////////////////////////
 // Insert before g.text section //
 //////////////////////////////////
+
+
+
+///////////////////////////////////////////////////
+// Replace g.text section by the following chunk //
+///////////////////////////////////////////////////
+            vis.selectAll('g.text')
+                .data(nodes)
+                .enter()
+                .append('g')
+                .attr('class', 'node_text')
+                .attr('transform', function(d) { return 'rotate(' + (d.x - 90) + ')translate(' + d.y + ')'; })
+                .append('svg:a')
+                .attr('xlink:href', function(d) { return d.link_ext; })
+                .attr('target', '_blank')
+                .append('text')
+		.text(function(d){
+              		var token = d.link_ext;
+              		if(/UN/.test(token)){
+                		var text_content = d.name + '*';
+              		} else {
+                		var text_content = d.name;
+              		}
+              		return d.children ? '' :  text_content;
+            	})
+                .attr('fill', function(d) { return d.color; })
+                .style('font-size', '20px')
+		.attr("font-family", "Arial")
+                .attr('dx', function(d) { return d.x < 180 ? 10 : -10; })
+                .attr('dy', '.31em')
+                .attr('text-anchor', function(d) { return d.x < 180 ? 'start' : 'end'; })
+                .attr('transform', function(d) { return d.x < 180 ? null : 'rotate(180)'; });

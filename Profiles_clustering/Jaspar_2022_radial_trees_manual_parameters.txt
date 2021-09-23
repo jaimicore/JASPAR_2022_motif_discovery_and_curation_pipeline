@@ -1,14 +1,14 @@
-Taxon,Collection,Nb_motifs,Image_x,Image_y,Image_h,Font,link_stroke,W_H,Rec_innerRad,Radius,Star,Position,Font-family,Other,Legend_position,Plotly_link
-,,,,,,,,,,,,,,,,
-Insects,CORE,150,120,-10,20,18,2.5,,395 680,"[360, 390]","13px, dy=18, x=44","rx,ry=2.8",Arial,,,https://chart-studio.plotly.com/~jaimicore/119
-Insects,UNVALIDATED,156,120,-10,20,20,2.5,,407 670,"[360, 400]","13px, dy=18, x=42","rx,ry=2.8",Arial,,,https://chart-studio.plotly.com/~jaimicore/118
-Nematodes,CORE,43,125,-10,30,20,2,,205 450,,"15px, dy=20, x=33","rx,ry=4.1",Arial,,,https://chart-studio.plotly.com/~jaimicore/128
-Nematodes,UNVALIDATED,45,125,-10,30,20,2,,205 450,,"15px, dy=20, x=33","rx,ry=3.8",Arial,,,https://chart-studio.plotly.com/~jaimicore/127
-Urochordata,CORE,86,125,-10,25,20,2.5,,255 510,"[360, 250]","15px, dy=23, x=52","rx,ry=3.6",Arial,Remove Unknown annotation,,https://chart-studio.plotly.com/~jaimicore/125
-Urochordata,UNVALIDATED,132,120,-5,20,20,2.5,,375 645,"[360, 370]","13px, dy=20, x=47","rx,ry=3",Arial,,,https://chart-studio.plotly.com/~jaimicore/124
-Fungi,CORE,179,120,-10,20,20,2.5,,455 740,"[360, 450]","13px, dy=18, x=41","rx,ry=2.6",Arial,,,https://chart-studio.plotly.com/~jaimicore/120
-Fungi,UNVALIDATED,231,215,-10,20,20,2.5,2200,605 1000,"[360,600]",,"rx,ry=2.1",Arial,,,https://chart-studio.plotly.com/~jaimicore/116
-Plants,CORE,612,200,-8,18,15.5,3.5,3500,1205 1640,"[360,1200]","13px, dy=18, x=41","rx,ry=2.09",Arial,,,https://chart-studio.plotly.com/~jaimicore/109
-Plants,UNVALIDATED,731,200,-8,18,15.5,3.5,4000,1505 1925,"[360,1500]","11px, dy=12, x=31","rx,ry=2",Arial,,,https://chart-studio.plotly.com/~jaimicore/110
-Vertebrates,CORE,844,190,-8,18,15.5,3.5,4000,1705 2115,"[360,1700]","10px, dy=11, x=31","rx,ry=2.09",Arial,Remove Unknown annotation,,https://chart-studio.plotly.com/~jaimicore/111
-Vertebrates,UNVALIDATED,1178,160,-8,15,15.5,3.5,5775,2455 2860,"[360,2450]","10px, dy=11, x=30","rx,ry=2",Arial,,1100px,https://chart-studio.plotly.com/~jaimicore/112
+Taxon,Collection,Nb_motifs,Image_x,Image_y,Image_h,Font,link_stroke,W_H,Rec_innerRad,Radius,Star,Position,Other,Legend_position,Plotly_link
+,,,,,,,,,,,,,,,
+Insects,CORE,150,120,-10,20,18,2.5,,395 680,"[360, 390]","13px, dy=18, x=44","rx,ry=2.8",,,https://chart-studio.plotly.com/~jaimicore/119
+Insects,UNVALIDATED,156,120,-10,20,20,2.5,,407 670,"[360, 400]","13px, dy=18, x=42","rx,ry=2.8",,,https://chart-studio.plotly.com/~jaimicore/118
+Nematodes,CORE,43,125,-10,30,20,2,,205 450,,"15px, dy=20, x=33","rx,ry=4.1",,,https://chart-studio.plotly.com/~jaimicore/128
+Nematodes,UNVALIDATED,45,125,-10,30,20,2,,205 450,,"15px, dy=20, x=33","rx,ry=3.8",,,https://chart-studio.plotly.com/~jaimicore/127
+Urochordata,CORE,86,125,-10,25,20,2.5,,255 510,"[360, 250]","15px, dy=23, x=52","rx,ry=3.6",Remove Unknown annotation,,https://chart-studio.plotly.com/~jaimicore/125
+Urochordata,UNVALIDATED,132,120,-5,20,20,2.5,,375 645,"[360, 370]","13px, dy=20, x=47","rx,ry=3",,,https://chart-studio.plotly.com/~jaimicore/124
+Fungi,CORE,179,120,-10,20,20,2.5,,455 740,"[360, 450]","13px, dy=18, x=41","rx,ry=2.6",,,https://chart-studio.plotly.com/~jaimicore/120
+Fungi,UNVALIDATED,231,215,-10,20,20,2.5,2200,605 1000,"[360,600]",,"rx,ry=2.1",,,https://chart-studio.plotly.com/~jaimicore/116
+Plants,CORE,612,200,-8,18,15.5,3.5,3500,1205 1640,"[360,1200]","13px, dy=18, x=41","rx,ry=2.09",,,https://chart-studio.plotly.com/~jaimicore/109
+Plants,UNVALIDATED,731,200,-8,18,15.5,3.5,4000,1505 1925,"[360,1500]","11px, dy=12, x=31","rx,ry=2",,,https://chart-studio.plotly.com/~jaimicore/110
+Vertebrates,CORE,844,190,-8,18,15.5,3.5,4000,1705 2115,"[360,1700]","10px, dy=11, x=31","rx,ry=2.09",Remove Unknown annotation,,https://chart-studio.plotly.com/~jaimicore/111
+Vertebrates,UNVALIDATED,1178,160,-8,15,15.5,3.5,5775,2455 2860,"[360,2450]","10px, dy=11, x=30","rx,ry=2",,1100px,https://chart-studio.plotly.com/~jaimicore/112

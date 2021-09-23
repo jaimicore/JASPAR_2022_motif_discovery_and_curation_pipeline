@@ -30,7 +30,10 @@ option_list = list(
               help = "Suffix to be added to the exported table file names", metavar = "character"),
   
   make_option(c("-o", "--output_directory"), type = "character", default = 0,
-              help = "Output directory where the resulting tables will be exported. (Mandatory) ", metavar = "character")
+              help = "Output directory where the resulting tables will be exported. (Mandatory) ", metavar = "character"),
+  
+  make_option(c("-c", "--collection"), type = "character", default = NULL,
+              help = "JASPAR motif collection. [CORE | UNVALIDATED]", metavar = "character")
 );
 message("; Reading arguments from command-line")
 opt_parser = OptionParser(option_list = option_list);
@@ -41,21 +44,29 @@ opt = parse_args(opt_parser);
 metadata.tab.file   <- opt$metadata_table
 out.dir             <- opt$output_directory
 file.suffix         <- opt$suffix
+collection.type     <- opt$collection
 
 
 #################################################
 ## Set environment variable for plotly API key ##
 #################################################
 # Sys.setenv("plotly_username" = "jaimicore")
-# Sys.setenv("plotly_api_key"  = "your_api_token")  ## https://plot.ly/settings/api
+# Sys.setenv("plotly_api_key"  = "your_api_key")  ## https://plot.ly/settings/api
 
 
 ###########
 ## Debug ##
 ###########
-# metadata.tab.file   <- "/home/jamondra/Downloads/JASPAR_2022_metadata_nonredundant_UNVALIDATED_vertebrates_table_parsed.tab"
 # out.dir             <- "/home/jamondra/Downloads/TF_Classes_barplots"
-# file.suffix         <- "JASPAR_2022_nonredundant_CORE_vertebrates"
+
+# metadata.tab.file   <- "/home/jamondra/Downloads/JASPAR_2022_metadata_nonredundant_CORE_urochordates_table_parsed.tab"
+# collection.type     <- "C"
+# file.suffix         <- "JASPAR_2022_nonredundant_CORE_nematodes"
+
+# metadata.tab.file   <- "/home/jamondra/Downloads/JASPAR_2022_metadata_nonredundant_UNVALIDATED_vertebrates_table_parsed.tab"
+# collection.type     <- "U"
+# file.suffix         <- "JASPAR_2022_nonredundant_UNVALIDATED_vertebrates"
+
 
 
 ###########################
@@ -106,28 +117,33 @@ nb.seed.colors     <- ifelse(TF.known.classes.nb < nb.classes.palette,
 carto.pal.classes  <- carto_pal(nb.seed.colors, "Safe")
 carto.pal.classes  <- carto.pal.classes[which(carto.pal.classes != "#888888")]
 
+
 ## Expand the color palette and add the gray color at the end
 class.colors        <- c(colorRampPalette(carto.pal.classes, space = "Lab")(TF.known.classes.nb),
                          unknown.class.color)
 names(class.colors) <- c(TF.known.classes, "Unknown")
 
-df.class.colour     <- data.frame(colour   = class.colors,
-                                  class    = names(class.colors),
-                                  class_nb = seq_len(TF.known.classes.nb + 1))
 
-class.colors <- rev(class.colors)
+df.class.colour <- data.frame(colour   = class.colors,
+                              class    = names(class.colors),
+                              class_nb = seq_len(TF.known.classes.nb + 1))
+class.colors    <- rev(class.colors)
 
 
 #################################################
 ## Prepare metadata table to be read by ggplot ##
 #################################################
-metadata.w.colors <- merge(metadata, df.class.colour, by = "class") %>% 
-                      arrange(class_nb)
-metadata.w.colors$class      <- factor(metadata.w.colors$class, levels = rev(c(TF.class.order, "Unknown")))
+metadata.w.colors       <- merge(metadata, df.class.colour, by = "class") %>% 
+                              arrange(class_nb)
+metadata.w.colors$class <- factor(metadata.w.colors$class, levels = rev(c(TF.class.order, "Unknown")))
+
+
+## Adapt to collection type
 metadata.w.colors$collection <- factor(metadata.w.colors$collection, levels = rev(c("CORE", "UNVALIDATED")))
 
 
 ## This dataframe contains the labels to be displayed on each bar
+## Adapt to collection type
 label.df <- metadata.w.colors %>% 
               group_by(class) %>% 
               mutate(Total_Class = n()) %>%
@@ -141,14 +157,46 @@ label.df <- metadata.w.colors %>%
               mutate(CORE        = max(COREc),
                      UNVALIDATED = max(UNVc)) %>% 
               select(class, CORE, UNVALIDATED) %>% 
-              distinct() %>% 
-              mutate(lab         = paste0(CORE, "/", UNVALIDATED),
-                     Total_Class = sum(c(CORE, UNVALIDATED))) %>% 
-              data.table()
+              distinct()
+          
+
+if (collection.type == "UNVALIDATED") {
+  
+  label.df <- label.df %>% 
+                mutate(lab         = paste0(CORE, "/", UNVALIDATED),
+                       Total_Class = sum(c(CORE, UNVALIDATED))) %>% 
+                data.table()
+  
+} else if (collection.type == "CORE") {
+  
+  label.df <- label.df %>% 
+                mutate(lab         = CORE,
+                       Total_Class = sum(c(CORE, UNVALIDATED))) %>% 
+                data.table()
+}
+
+  
+  
 
 ## Use this variable to have enough space to insert the labels
 max.y <- max(label.df$Total_Class) + 25
 
+## The alpha parameter and plot title change depending on the collection type
+alpha.values  <- NULL
+y.axis.lab    <- NULL
+barplot.title <- NULL
+if (collection.type == "UNVALIDATED") {
+  
+  alpha.values  <- c(0.4, 1)
+  y.axis.lab    <- "Number of motifs (CORE/UNVALIDATED)"
+  barplot.title <- gsub(file.suffix, pattern = "_UNVALIDATED$", replacement = "_CORE+UNVALIDATED")
+  
+} else if (collection.type == "CORE") {
+  
+  alpha.values  <- 1
+  y.axis.lab    <- "Number of motifs (CORE)"
+  barplot.title <- file.suffix
+}
 
 ## Barplot code
 TF.class.barplot <- ggplot(metadata.w.colors, aes(alpha = collection, x = class, fill = class)) +
@@ -156,8 +204,8 @@ TF.class.barplot <- ggplot(metadata.w.colors, aes(alpha = collection, x = class,
                       coord_flip() +
                       scale_fill_manual(values = class.colors) +
                       theme_classic() +
-                      labs(x = "TF class", y = "Number of motifs (CORE/UNVALIDATED)", title = file.suffix) +
-                      scale_alpha_manual(values = c(0.4, 1)) +
+                      labs(x = "TF class", y = y.axis.lab, title = barplot.title) +
+                      scale_alpha_manual(values = alpha.values) +
                       theme(text        = element_text(size = 15),
                             axis.text.y = element_text(angle = 0, hjust = 1, size = 10),
                             axis.text.x = element_text(hjust = 0.5, size = 15),
@@ -165,6 +213,7 @@ TF.class.barplot <- ggplot(metadata.w.colors, aes(alpha = collection, x = class,
                             legend.title    = element_blank(),
                             legend.text     = element_text(size = 9),
                             legend.box      = "vertical",
+                            plot.title      = element_text(hjust = 0.5),
                             panel.grid.major.x = element_line(color = "#969696",
                                                               size = 0.25,
                                                               linetype = 2)) +
@@ -173,8 +222,7 @@ TF.class.barplot <- ggplot(metadata.w.colors, aes(alpha = collection, x = class,
                       scale_y_continuous(limits = c(0, max.y), expand = c(0,2), breaks = seq(0, max.y, by = 50)[-1])
 
 
-
-
+## Convert ggplot to plotly
 TF.class.barplotly <- ggplotly(TF.class.barplot,
                                tooltip = c("alpha", "x", "y")) %>% 
                       config(displayModeBar = F)
@@ -191,7 +239,7 @@ message("; Interactive barplot created: ", TF.class.barplotly.html)
 
 # Create a shareable link to the charts
 # Set up API credentials: https://plot.ly/r/getting-started
-# api_create(TF.class.barplotly, filename = paste0("TF_classes_barplot_", file.suffix, ".html"))
+# api_create(TF.class.barplotly, filename = paste0("TF_classes_barplot_", file.suffix, ".html"), )
 # message("; Interactive barplot created online, available through plotly account")
 
 

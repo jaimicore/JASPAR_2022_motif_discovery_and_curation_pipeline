@@ -43,9 +43,8 @@ CLUSTERING_INTERACTIVE  = expand(os.path.join(RESULTS_DIR, "JASPAR_2022_matrix_c
 ANNOTATION_TABLES       = expand(os.path.join(TABLES_DIR, "{taxon}", "{collection}", "JASPAR_2022_{taxon}_annotations.tsv"), taxon = TAXA, collection = COLLECTIONS)
 PARSE_ANNOTATION_TABLES = expand(os.path.join(TABLES_DIR, "{taxon}", "{collection}", "JASPAR_2022_{taxon}_{collection}_annotations_with_colours.tsv"), taxon = TAXA, collection = COLLECTIONS)
 HTML_TF_CLASS_COLOUR    = expand(os.path.join(TABLES_DIR, "{taxon}", "{collection}", "JASPAR_2022_{taxon}_{collection}_TF_class_colours.html"), taxon = TAXA, collection = COLLECTIONS)
-     
 CLUSTERING_RADIAL       = expand(os.path.join(RESULTS_DIR, "JASPAR_2022_matrix_clustering", "{taxon}", "{collection}", "radial_trees", "JASPAR_2022_matrix_clustering_{taxon}_{collection}_tree_annotated.html"), taxon = TAXA, collection = COLLECTIONS)
-TF_CLASS_BARPLOTS       = expand(os.path.join(RESULTS_DIR, "JASPAR_2022_matrix_clustering", "{taxon}", "UNVALIDATED", "radial_trees", "barplots", "TF_classes_barplot_JASPAR_2022_{taxon}_CORE+UNVALIDATED.html"), taxon = TAXA)
+TF_CLASS_BARPLOTS       = expand(os.path.join(RESULTS_DIR, "JASPAR_2022_matrix_clustering", "{taxon}", "{collection}", "radial_trees", "barplots", "TF_classes_barplot_JASPAR_2022_{taxon}_{collection}.html"), taxon = TAXA, collection = COLLECTIONS)
 
 CLUSTERING_ARCHETYPES = expand(os.path.join(RESULTS_DIR, "JASPAR_2022_matrix_clustering", "{taxon}", "CORE", "archetypes", "JASPAR_2022_matrix_clustering_{taxon}_CORE_SUMMARY.html"), taxon = TAXA)
 ARCHETYPE_NAMES = expand(os.path.join(RESULTS_DIR, "JASPAR_2022_matrix_clustering", "{taxon}", "CORE", "archetypes", "FBP_names_JASPAR_2022_{taxon}_CORE.txt"), taxon = TAXA)
@@ -59,7 +58,7 @@ rule all:
            PARSE_ANNOTATION_TABLES,  \
            HTML_TF_CLASS_COLOUR,     \
            CLUSTERING_RADIAL,        \
-           TF_CLASS_BARPLOTS ,       \
+           TF_CLASS_BARPLOTS,        \
            CLUSTERING_INTERACTIVE,   \
            CLUSTERING_ARCHETYPES,    \
            ARCHETYPE_NAMES
@@ -371,16 +370,16 @@ rule TF_class_barplots:
      """  
      """
      input:
-          metadata = os.path.join(TABLES_DIR, "{taxon}", "UNVALIDATED", "JASPAR_2022_metadata_nonredundant_UNVALIDATED_{taxon}_table_parsed.tab")
+          metadata = os.path.join(TABLES_DIR, "{taxon}", "{collection}", "JASPAR_2022_metadata_nonredundant_{collection}_{taxon}_table_parsed.tab")
      output:
-          os.path.join(RESULTS_DIR, "JASPAR_2022_matrix_clustering", "{taxon}", "UNVALIDATED", "radial_trees", "barplots", "TF_classes_barplot_JASPAR_2022_{taxon}_CORE+UNVALIDATED.html")
+          os.path.join(RESULTS_DIR, "JASPAR_2022_matrix_clustering", "{taxon}", "{collection}", "radial_trees", "barplots", "TF_classes_barplot_JASPAR_2022_{taxon}_{collection}.html")
      message:
-          "Creating TF class interactive barplots - JASPAR 2022 {wildcards.taxon} CORE+UNVALIDATED"
-     params: out_dir = os.path.join(RESULTS_DIR, "JASPAR_2022_matrix_clustering", "{taxon}", "UNVALIDATED", "radial_trees", "barplots"), \
-             suffix  = "JASPAR_2022_{taxon}_CORE+UNVALIDATED"
+          "Creating TF class interactive barplots - JASPAR 2022 {wildcards.taxon} {wildcards.collection}"
+     params: out_dir = os.path.join(RESULTS_DIR, "JASPAR_2022_matrix_clustering", "{taxon}", "{collection}", "radial_trees", "barplots"), \
+             suffix  = "JASPAR_2022_{taxon}_{collection}"
      shell:
           """
-          Rscript bin/JASPAR_2022_TF_classes_barplots.R -s {params.suffix} -m {input.metadata} -o {params.out_dir}
+          Rscript bin/JASPAR_2022_TF_classes_barplots.R -s {params.suffix} -m {input.metadata} -o {params.out_dir} -c {wildcards.collection}
           """
      
 

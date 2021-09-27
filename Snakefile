@@ -229,14 +229,13 @@ rule RSAT_peakmotifs_per_exp:
         -noov \
         -2str \
         -origin center \
-        #-motif_db jaspar_vertebrates tf {params.jaspar_motifs} \
         -scan_markov 1 \
         -task {params.task} \
         -prefix {params.prefix} \
         -img_format png \
         -outdir {params.peakmo_outdir}
         """
-
+        #-motif_db jaspar_vertebrates tf {params.jaspar_motifs} \
 
 
 ##############################
@@ -558,6 +557,8 @@ rule annotate_best_centrimo_experiment:
     """
     Assign the TF name to the selected motif.
     This rule is executed for the best experiment of each dataset (experiment). Make sure the experiment map has the experiment ID in the first field, and the TF name in the third field
+    
+    Originally the centrimo p-value is negative log10(pval), in this rule the sign is changed to positive corresponding to -log10(pval).
     """
     input:
         tf_jaspar_map = config["TF_Experiment_map"],
@@ -683,11 +684,10 @@ rule Motifs_to_curate_PDF:
         os.path.join(config["curation_dir"], "Selected_motifs_to_curate_log10_pval_{logpval}.pdf")
     message:
         "; Concatenating PDFs with the motifs to curate "
-    params: central_pval = config["central_pvalue"]
     priority:
         80
     shell:
         """
-        PDF_FILES=` awk -F"\t" '{{ if($17 >= {params.central_pval}){{ print $20 }}}}' {input} | uniq | xargs `
+        PDF_FILES=` awk -F"\t" '{{ print $20 }}' {input} | uniq | xargs `
         pdfunite $PDF_FILES {output}
         """

@@ -206,11 +206,11 @@ rule RSAT_peakmotifs_per_exp:
         min_oligo = config["peakmotifs_disco_min_oligo"],
         max_oligo = config["peakmotifs_disco_max_oligo"],
         ci = config["peakmotifs_class_interval"],
-        cisbp = os.path.join(config["RSAT"], "public_html/motif_databases/cisBP/cisBP_Homo_sapiens_2014-10.tf"),
-        jaspar_motifs = os.path.join(config["RSAT"], "public_html/motif_databases/JASPAR/Jaspar_2018/nonredundant/JASPAR2018_CORE_vertebrates_non-redundant_pfms_transfac.tf"),
+        #cisbp = os.path.join(config["RSAT"], "public_html/motif_databases/cisBP/cisBP_Homo_sapiens_2014-10.tf"),
+        #jaspar_motifs = os.path.join(config["RSAT"], "public_html/motif_databases/JASPAR/Jaspar_2018/nonredundant/JASPAR2018_CORE_vertebrates_non-redundant_pfms_transfac.tf"),
         #jaspar_motifs = os.path.join(config["RSAT"], "public_html/motif_databases/JASPAR/Jaspar_2020/nonredundant/JASPAR2020_CORE_vertebrates_non-redundant_pfms.tf"),
         #task = "purge,seqlen,composition,disco,merge_motifs,split_motifs,motifs_vs_motifs,timelog,archive,synthesis,small_summary,motifs_vs_db,scan",
-        task = "purge,seqlen,composition,disco,merge_motifs,split_motifs,motifs_vs_motifs,timelog,archive,synthesis",
+        task = "purge,seqlen,composition,disco,merge_motifs,split_motifs,timelog,archive,synthesis",
         prefix = "{TF}",
         peakmo_outdir = os.path.join(config["out_dir"], "{TF}", "peak-motifs")
     shell:
@@ -229,7 +229,7 @@ rule RSAT_peakmotifs_per_exp:
         -noov \
         -2str \
         -origin center \
-        -motif_db jaspar_vertebrates tf {params.jaspar_motifs} \
+        #-motif_db jaspar_vertebrates tf {params.jaspar_motifs} \
         -scan_markov 1 \
         -task {params.task} \
         -prefix {params.prefix} \

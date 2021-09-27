@@ -4,7 +4,7 @@ author: Jaime_A_Castro_Mondragon
 ## === ##
 ## Bin ##
 ## === ##
-bin : /storage/scratch/JASPAR_2022/bin
+bin : bin
 
 python : python2.7
 RSAT   : /lsc/rsat

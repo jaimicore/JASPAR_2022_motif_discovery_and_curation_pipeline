@@ -574,6 +574,7 @@ rule annotate_best_centrimo_experiment:
         """
         bash {params.scripts_bin}/annotate_best_centrimo_experiment.sh {input.best_exp} {input.tf_jaspar_map} {output}
         """
+# In this rule we should add the TF uniprot IDs + TFclass information to fill the curation table. 
 # #perl {params.scripts_bin}/annotate_best_centrimo_experiment.pl --best {input.best_exp} --map {input.tf_jaspar_map} --output {output}
 
 
@@ -640,6 +641,8 @@ rule Select_motifs_to_curate:
         """
         cat {input} | awk -F"\t" '{{ if ($17 >= {params.central_pval}) {{ print }} }}' | uniq > {output}
         """
+	
+## To check the p-vlaue indicated in the config and the actual computed one
 
 
 rule rename_jaspar_motif_header:

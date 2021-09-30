@@ -292,8 +292,17 @@ checkpoint  RSAT_PSSM_to_JASPAR_format:
         -split \
         -prefix {params.prefix} \
         -o {params.prefix_motif} ;
+        
         {params.RSAT}/perl-scripts/convert-matrix -v 2 \
         -from tf -to tab \
+        -i {input} \
+        -return {params.return_fields} \
+        -split \
+        -prefix {params.prefix} \
+        -o {params.prefix_motif}
+        
+        {params.RSAT}/perl-scripts/convert-matrix -v 2 \
+        -from tf -to tf \
         -i {input} \
         -return {params.return_fields} \
         -split \

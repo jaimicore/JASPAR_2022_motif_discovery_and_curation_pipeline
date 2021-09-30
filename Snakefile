@@ -284,7 +284,7 @@ checkpoint  RSAT_PSSM_to_JASPAR_format:
         out_dir = os.path.join(config["out_dir"], "{TF}", "motifs", "jaspar", "pfm")
     shell:
         """
-        mkdir -p {params.out_dir} ;
+        mkdir -m 007 -p {params.out_dir} ;
         {params.RSAT}/perl-scripts/convert-matrix -v 2 \
         -from tf -to jaspar \
         -i {input} \
@@ -366,39 +366,65 @@ rule Generate_matrix_logo:
 ############################################################
 ## Matrix scan: find sites to build the discovered motifs ##
 ############################################################
+# rule find_RSAT_matrix_sites:
+#     """
+#     Find the TFBSs used to built the matrices.
+#     This rule is executed for each discovered motif.
+#     """
+#     input:
+#         logos = os.path.join(config["out_dir"], "{TF}", "motifs", "jaspar", "logos", "{TF}_peak-motifs_m{n}_logo.png"), \
+#         sequences = os.path.join(config["out_dir"], "{TF}", "peak-motifs", "data", "sequences", "{TF}_test.fasta"), \
+#         matrix = os.path.join(config["out_dir"], "{TF}", "motifs", "jaspar", "pfm", "{TF}_peak-motifs_m{n}.tab"), \
+#         bg_file = os.path.join(config["out_dir"], "{TF}", "peak-motifs", "results", "composition", "{TF}_test_inclusive-1str-ovlp_2nt.txt")
+#     output:
+#         os.path.join(config["out_dir"], "{TF}", "matrix_sites", "{TF}_peak-motifs_m{n}.tf.sites")
+#     message:
+#         "; Scanning PSSM on 101bp peaks - TF : {wildcards.TF} - Matrix number: {wildcards.n}"
+#     params:
+#         RSAT = config["RSAT"]
+#     priority:
+#         92
+#     shell:
+#         """
+#         {params.RSAT}/bin/matrix-scan-quick \
+#         -i {input.sequences} \
+#         -m {input.matrix} \
+#         -bgfile {input.bg_file} \
+#         -t 5 \
+#         -return sites > {output}
+#         """
+
 rule find_RSAT_matrix_sites:
     """
     Find the TFBSs used to built the matrices.
     This rule is executed for each discovered motif.
     """
     input:
-        logos = os.path.join(config["out_dir"], "{TF}", "motifs", "jaspar", "logos", "{TF}_peak-motifs_m{n}_logo.png"), \
-        sequences = os.path.join(config["out_dir"], "{TF}", "peak-motifs", "data", "sequences", "{TF}_test.fasta"), \
-        matrix = os.path.join(config["out_dir"], "{TF}", "motifs", "jaspar", "pfm", "{TF}_peak-motifs_m{n}.tab"), \
-        bg_file = os.path.join(config["out_dir"], "{TF}", "peak-motifs", "results", "composition", "{TF}_test_inclusive-1str-ovlp_2nt.txt")
+        matrix    = os.path.join(config["out_dir"], "{TF}", "motifs", "jaspar", "pfm", "{TF}_peak-motifs_m{n}.tab"), \
+        map_table = os.path.join(config["out_dir"], "{TF}", "peak-motifs", "results", "discovered_motifs", "{TF}_motifs_map.tab")
     output:
         os.path.join(config["out_dir"], "{TF}", "matrix_sites", "{TF}_peak-motifs_m{n}.tf.sites")
     message:
         "; Scanning PSSM on 101bp peaks - TF : {wildcards.TF} - Matrix number: {wildcards.n}"
     params:
-        RSAT = config["RSAT"]
+        results_dir = os.path.join(config["out_dir"], "{TF}", "peak-motifs", "results"), \
+        sites_dir   = os.path.join(config["out_dir"], "{TF}", "matrix_sites")
     priority:
         92
     shell:
         """
-        {params.RSAT}/bin/matrix-scan-quick \
-        -i {input.sequences} \
-        -m {input.matrix} \
-        -bgfile {input.bg_file} \
-        -t 5 \
-        -return sites > {output}
+        mkdir -p sites_dir ; 
+        MOTIF_FILE="{input.matrix}"
+        MOTIF_NB=` echo ${{MOTIF_FILE##*/}} | perl -lne '$_ =~ s/^*_(peak-motifs_m\\d+)/$1/gi; print $1;' `
+
+        MAP_TABLE="{input.map_table}"
+        MOTIF_ID=` grep -P "$MOTIF_NB\\s" $MAP_TABLE | cut -f2 | perl -lne '$_ =~ s/_m\\d+//gi; print $_;' `
+        MOTIF_ID_NB=` grep -P "$MOTIF_NB\\s" $MAP_TABLE | cut -f2 `
+
+        SITES_FILE=` ls {params.results_dir}/$MOTIF_ID/*.ft `
+
+        cat $SITES_FILE | grep -v '^;' | grep -v '^#' > {output}
         """
-
-#/lsc/rsat/perl-scripts/convert-matrix -v 2         -from tf -to jaspar         -i /storage/scratch/JASPAR_2022/REMAP_2020_Athaliana/results/GSE60141_WRKY30_Col-0-leaves-tnt-colamp/peak-motifs/results/discovered_motifs/GSE60141_WR\KY30_Col-0-leaves-tnt-colamp_motifs_discovered.tf         -return counts         -split         -prefix peak-motifs         -o /storage/scratch/JASPAR_2022/REMAP_2020_Athaliana/results/GSE60141_WRKY30_Col-0-leaves-tnt-colamp/motifs/jaspar/pfm/GSE60141_WRKY30_Col-0-leaves-tnt-colamp ;
-
-
-
-#/storage/scratch/JASPAR_2022/REMAP_2020_Athaliana/results/GSE60141_WRKY71_Col-0-leaves-tnt-col/motifs/jaspar/pfm/GSE60141_WRKY71_Col-0-leaves-tnt-col_peak-motifs_m3.tab         -bgfile /storage/scratch/JASPAR_2022/REMAP_2020_Athaliana/results/GSE60141_WRKY71_Col-0-leaves-tnt-col/peak-motifs/results/composition/GSE60141_WRKY71_Col-0-leaves-tnt-col_test_inclusive-1str-ovlp_2nt.txt         -t 5         -return sites > /storage/scratch/JASPAR_2022/REMAP_2020_Athaliana/results/GSE60141_WRKY71_Col-0-leaves-tnt-col/matrix_sites/GSE60141_WRKY71_Col-0-leaves-tnt-col_peak-motifs_m3.tf.sites
 
 
 rule convert_RSAT_matrix_sites_to_BED:

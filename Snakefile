@@ -206,11 +206,11 @@ rule RSAT_peakmotifs_per_exp:
         min_oligo = config["peakmotifs_disco_min_oligo"],
         max_oligo = config["peakmotifs_disco_max_oligo"],
         ci = config["peakmotifs_class_interval"],
-        #cisbp = os.path.join(config["RSAT"], "public_html/motif_databases/cisBP/cisBP_Homo_sapiens_2014-10.tf"),
-        #jaspar_motifs = os.path.join(config["RSAT"], "public_html/motif_databases/JASPAR/Jaspar_2018/nonredundant/JASPAR2018_CORE_vertebrates_non-redundant_pfms_transfac.tf"),
+        cisbp = os.path.join(config["RSAT"], "public_html/motif_databases/cisBP/cisBP_Homo_sapiens_2014-10.tf"),
+        jaspar_motifs = os.path.join(config["RSAT"], "public_html/motif_databases/JASPAR/Jaspar_2018/nonredundant/JASPAR2018_CORE_vertebrates_non-redundant_pfms_transfac.tf"),
         #jaspar_motifs = os.path.join(config["RSAT"], "public_html/motif_databases/JASPAR/Jaspar_2020/nonredundant/JASPAR2020_CORE_vertebrates_non-redundant_pfms.tf"),
         #task = "purge,seqlen,composition,disco,merge_motifs,split_motifs,motifs_vs_motifs,timelog,archive,synthesis,small_summary,motifs_vs_db,scan",
-        task = "purge,seqlen,composition,disco,merge_motifs,split_motifs,timelog,archive,synthesis",
+        task = "purge,seqlen,composition,disco,merge_motifs,split_motifs,motifs_vs_motifs,timelog,archive,synthesis",
         prefix = "{TF}",
         peakmo_outdir = os.path.join(config["out_dir"], "{TF}", "peak-motifs")
     shell:
@@ -229,19 +229,20 @@ rule RSAT_peakmotifs_per_exp:
         -noov \
         -2str \
         -origin center \
+        -motif_db jaspar_vertebrates tf {params.jaspar_motifs} \
         -scan_markov 1 \
         -task {params.task} \
         -prefix {params.prefix} \
         -img_format png \
         -outdir {params.peakmo_outdir} ;
         """
-        #-motif_db jaspar_vertebrates tf {params.jaspar_motifs} \
+
 
 
 ##############################
 ## Matrix format conversion ##
 ##############################
-checkpoint  RSAT_PSSM_to_JASPAR_format:
+rule Motif_number_to_ID:
     """
     Map table to associate motif numbers (m1, m2, ...) with motif names from peak-motifs (e.g., oligos_6nt_mkv3_m1)
     """
@@ -290,7 +291,6 @@ checkpoint  RSAT_PSSM_to_JASPAR_format:
         -split \
         -prefix {params.prefix} \
         -o {params.prefix_motif} ;
-	
         {params.RSAT}/perl-scripts/convert-matrix -v 2 \
         -from tf -to tab \
         -i {input} \
@@ -583,8 +583,6 @@ rule annotate_best_centrimo_experiment:
     """
     Assign the TF name to the selected motif.
     This rule is executed for the best experiment of each dataset (experiment). Make sure the experiment map has the experiment ID in the first field, and the TF name in the third field
-    
-    Originally the centrimo p-value is negative log10(pval), in this rule the sign is changed to positive corresponding to -log10(pval).
     """
     input:
         tf_jaspar_map = config["TF_Experiment_map"],
@@ -601,7 +599,6 @@ rule annotate_best_centrimo_experiment:
         """
         bash {params.scripts_bin}/annotate_best_centrimo_experiment.sh {input.best_exp} {input.tf_jaspar_map} {output}
         """
-# In this rule we should add the TF uniprot IDs + TFclass information to fill the curation table. 
 # #perl {params.scripts_bin}/annotate_best_centrimo_experiment.pl --best {input.best_exp} --map {input.tf_jaspar_map} --output {output}
 
 
@@ -668,8 +665,6 @@ rule Select_motifs_to_curate:
         """
         cat {input} | awk -F"\t" '{{ if ($17 >= {params.central_pval}) {{ print }} }}' | uniq > {output}
         """
-	
-## To check the p-vlaue indicated in the config and the actual computed one
 
 
 rule rename_jaspar_motif_header:
@@ -710,10 +705,11 @@ rule Motifs_to_curate_PDF:
         os.path.join(config["curation_dir"], "Selected_motifs_to_curate_log10_pval_{logpval}.pdf")
     message:
         "; Concatenating PDFs with the motifs to curate "
+    params: central_pval = config["central_pvalue"]
     priority:
         79
     shell:
         """
-        PDF_FILES=` awk -F"\t" '{{ print $20 }}' {input} | uniq | xargs `
+        PDF_FILES=` awk -F"\t" '{{ if($17 >= {params.central_pval}){{ print $20 }}}}' {input} | uniq | xargs `
         pdfunite $PDF_FILES {output}
         """

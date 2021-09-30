@@ -234,7 +234,7 @@ rule RSAT_peakmotifs_per_exp:
         -task {params.task} \
         -prefix {params.prefix} \
         -img_format png \
-        -outdir {params.peakmo_outdir}
+        -outdir {params.peakmo_outdir} ;
         """
 
 
@@ -242,6 +242,26 @@ rule RSAT_peakmotifs_per_exp:
 ##############################
 ## Matrix format conversion ##
 ##############################
+checkpoint  RSAT_PSSM_to_JASPAR_format:
+    """
+    Map table to associate motif numbers (m1, m2, ...) with motif names from peak-motifs (e.g., oligos_6nt_mkv3_m1)
+    """
+    input:
+        os.path.join(config["out_dir"], "{TF}", "peak-motifs", "results", "discovered_motifs", "{TF}_motifs_discovered.tf")
+    output:
+       os.path.join(config["out_dir"], "{TF}", "peak-motifs", "results", "discovered_motifs", "{TF}_motifs_map.tab")
+    message:
+        "; Associating motif numbers with motif IDs : {wildcards.TF} "
+    priority:
+        96
+    shell:
+        """
+        grep '^AC' {input} | cut -d' ' -f3 | perl -pe '$_ = "m$.\t$_"' > {output}
+
+        """
+
+
+     
 checkpoint  RSAT_PSSM_to_JASPAR_format:
     """
     Convert the RSAT discovered matrices from transfac (tf) format to JASPAR format.
@@ -254,7 +274,7 @@ checkpoint  RSAT_PSSM_to_JASPAR_format:
     message:
         "; Converting RSAT motifs (tf format) to JASPAR format - TF : {wildcards.TF} "
     priority:
-        96
+        95
     params:
         RSAT = config["RSAT"],
         return_fields = "counts",
@@ -294,7 +314,7 @@ rule JASPAR_PSSM_to_PWM:
     message:
         "; Generating PWM from JASPAR matrices - TF : {wildcards.TF} "
     priority:
-        95
+        94
     params:
         scripts_bin = config["bin"]
     shell:
@@ -320,7 +340,7 @@ rule Generate_matrix_logo:
         logo_name = "{TF}_peak-motifs_m{n}",
         RSAT = config["RSAT"]
     priority:
-        94
+        93
     shell:
         """
         {params.RSAT}/perl-scripts/convert-matrix -v 2 \
@@ -353,7 +373,7 @@ rule find_RSAT_matrix_sites:
     params:
         RSAT = config["RSAT"]
     priority:
-        93
+        92
     shell:
         """
         {params.RSAT}/bin/matrix-scan-quick \
@@ -363,6 +383,12 @@ rule find_RSAT_matrix_sites:
         -t 5 \
         -return sites > {output}
         """
+
+#/lsc/rsat/perl-scripts/convert-matrix -v 2         -from tf -to jaspar         -i /storage/scratch/JASPAR_2022/REMAP_2020_Athaliana/results/GSE60141_WRKY30_Col-0-leaves-tnt-colamp/peak-motifs/results/discovered_motifs/GSE60141_WR\KY30_Col-0-leaves-tnt-colamp_motifs_discovered.tf         -return counts         -split         -prefix peak-motifs         -o /storage/scratch/JASPAR_2022/REMAP_2020_Athaliana/results/GSE60141_WRKY30_Col-0-leaves-tnt-colamp/motifs/jaspar/pfm/GSE60141_WRKY30_Col-0-leaves-tnt-colamp ;
+
+
+
+#/storage/scratch/JASPAR_2022/REMAP_2020_Athaliana/results/GSE60141_WRKY71_Col-0-leaves-tnt-col/motifs/jaspar/pfm/GSE60141_WRKY71_Col-0-leaves-tnt-col_peak-motifs_m3.tab         -bgfile /storage/scratch/JASPAR_2022/REMAP_2020_Athaliana/results/GSE60141_WRKY71_Col-0-leaves-tnt-col/peak-motifs/results/composition/GSE60141_WRKY71_Col-0-leaves-tnt-col_test_inclusive-1str-ovlp_2nt.txt         -t 5         -return sites > /storage/scratch/JASPAR_2022/REMAP_2020_Athaliana/results/GSE60141_WRKY71_Col-0-leaves-tnt-col/matrix_sites/GSE60141_WRKY71_Col-0-leaves-tnt-col_peak-motifs_m3.tf.sites
 
 
 rule convert_RSAT_matrix_sites_to_BED:
@@ -380,7 +406,7 @@ rule convert_RSAT_matrix_sites_to_BED:
         scripts_bin = config["bin"],
 	genome_name = config['genome_name']
     priority:
-        92
+        91
     shell:
         """
         awk -v species={params.genome_name} -f {params.scripts_bin}/sites-to-bed.awk {input} > {output}
@@ -401,7 +427,7 @@ rule get_RSAT_matrix_sites_fasta:
     params:
         genome_fasta = config["genome_fasta"]
     priority:
-        91
+        90
     shell:
         """
         bedtools getfasta -name -s -fi {params.genome_fasta} -bed {input} -fo {output}
@@ -429,7 +455,7 @@ rule Scan_JASPAR_PWM:
     params:
         scripts_bin = config["bin"]
     priority:
-        90
+        89
     shell:
         """
         {params.scripts_bin}/pwm_searchPFF {input.pwm} {input.peaks} 0.85 -b > {output}
@@ -452,7 +478,7 @@ rule Calculate_centrimo_pvalue:
         scripts_bin = config["bin"],
         centrimo_folder = os.path.join(config["out_dir"], "{TF}", "central_enrichment")
     priority:
-        89
+        88
     shell:
         """
         mkdir -m 077 -p {params.centrimo_folder} ;
@@ -477,7 +503,7 @@ rule generate_centrimo_plots:
     params:
         scripts_bin = config["bin"]
     priority:
-        88
+        87
     shell:
         """
         R --vanilla --slave --silent -f {params.scripts_bin}/centrimo_plot.R --args {input.fa} {output}
@@ -523,7 +549,7 @@ rule JASPAR_annotation_table:
         taxon = config["taxon"],
         out_dir = config["out_dir"]
     priority:
-        87
+        86
     shell:
        """
        Rscript {params.scripts_bin}/Retrieve_matrix_information_from_JASPAR2020.R -o {params.out_dir} -t {params.taxon}
@@ -546,7 +572,7 @@ rule choose_best_centrimo_experiment:
         centrimo_dir = os.path.join(config["out_dir"], "{TF}", "central_enrichment"),
         nbmotifs     = config['top_motifs']
     priority:
-        86
+        85
     shell:
         """
         bash {params.scripts_bin}/best_centrimo.sh -i {params.centrimo_dir} -m {params.nbmotifs} > {output}
@@ -568,7 +594,7 @@ rule annotate_best_centrimo_experiment:
     params:
         scripts_bin = config["bin"]
     priority:
-        85
+        84
     shell:
         """
         bash {params.scripts_bin}/annotate_best_centrimo_experiment.sh {input.best_exp} {input.tf_jaspar_map} {output}
@@ -595,7 +621,7 @@ rule best_centrimo_experiment_logo:
         scripts_bin = config["bin"],
 	logpval     = config['central_pvalue']
     priority:
-        84
+        83
     shell:
         """
         bash {params.scripts_bin}/create_latex_logos.sh -l {params.scripts_bin}/latex_header.txt -i {input} -o {output} -t {params.logpval}
@@ -614,7 +640,7 @@ rule Concat_annotated_experiments:
         "; Concatenating the tables with the annotated experiments and the centrality p-value "
     params: out_dir = config["out_dir"]
     priority:
-        83
+        82
     shell:
         """
         ls {params.out_dir}/*/central_enrichment/selected_motif/*.501bp.fa.sites.centrimo.best.TF_associated | xargs cat > {output}
@@ -634,7 +660,7 @@ rule Select_motifs_to_curate:
     params:
         central_pval = config["central_pvalue"]
     priority:
-        82
+        81
     shell:
         """
         cat {input} | awk -F"\t" '{{ if ($17 >= {params.central_pval}) {{ print }} }}' | uniq > {output}
@@ -657,7 +683,7 @@ rule rename_jaspar_motif_header:
     message:
         "; Renaming jaspar motif header"
     priority:
-        81
+        80
     shell:
         """
         perl -lne '@sl = split(/\\t/, $_); \
@@ -681,7 +707,7 @@ rule Motifs_to_curate_PDF:
         "; Concatenating PDFs with the motifs to curate "
     params: central_pval = config["central_pvalue"]
     priority:
-        80
+        79
     shell:
         """
         PDF_FILES=` awk -F"\t" '{{ if($17 >= {params.central_pval}){{ print $20 }}}}' {input} | uniq | xargs `

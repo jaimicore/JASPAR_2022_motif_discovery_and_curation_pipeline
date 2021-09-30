@@ -257,7 +257,7 @@ rule Motif_number_to_ID:
         96
     shell:
         """
-        grep '^AC' {input} | cut -d' ' -f3 | perl -pe '$_ = "m$.\t$_"' > {output}
+        grep '^AC' {input} | cut -d' ' -f3 | perl -pe '$_ = "peak-motifs_m$.\t$_"' > {output}
 
         """
 

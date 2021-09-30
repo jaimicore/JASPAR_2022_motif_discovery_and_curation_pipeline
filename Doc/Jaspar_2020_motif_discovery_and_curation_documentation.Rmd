@@ -160,7 +160,7 @@ In order to run the pipeline, users must enter one of the following analysis IDs
 
 
 ```{r, engine = 'bash', eval = FALSE}
-snakemake --config analysis_id=ReMap2022_Human [--cores X]
+snakemake --config analysis_id=ReMap2020_Human [--cores X]
 ```
 
 All the *snakemake* rules in the pipeline, except the first one (*extract_peak_summits*)

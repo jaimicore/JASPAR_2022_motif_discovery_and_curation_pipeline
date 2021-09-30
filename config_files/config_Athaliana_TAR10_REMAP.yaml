@@ -4,7 +4,7 @@ author: Jaime_A_Castro_Mondragon + Rafael_Ruidavets_Puig
 ## === ##
 ## Bin ##
 ## === ##
-bin : /storage/scratch/JASPAR_2022/bin
+bin : bin
 
 python : python2.7
 RSAT : /lsc/rsat
@@ -20,7 +20,7 @@ peakmotifs_disco_max_oligo : 7
 peakmotifs_class_interval : 25
 
 
-## -Log10(Centraliyy p-value)
+## -Log10(Centrality p-value)
 central_pvalue : 50
 top_motifs     : 3
 

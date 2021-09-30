@@ -55,6 +55,7 @@ LOGPVAL = [config['central_pvalue']]
 rule all:
     input:
         expand(os.path.join(config["out_dir"], "{TF}", "peak-motifs", "results", "discovered_motifs", "{TF}_motifs_discovered.tf"), TF = TF_NAMES), \
+        expand(os.path.join(config["out_dir"], "{TF}", "peak-motifs", "results", "discovered_motifs", "{TF}_motifs_map.tab"), TF = TF_NAMES), \
         expand(os.path.join(config["out_dir"], "{TF}", "central_enrichment", "selected_motif", "{TF}.501bp.fa.sites.centrimo.best.TF_associated"), TF = TF_NAMES), \
         JASPAR_ANN_TAB, \
         expand(os.path.join(config["curation_dir"], "Renamed_log_pval_{logpval}.txt"), logpval = LOGPVAL), \

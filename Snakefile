@@ -423,7 +423,7 @@ rule find_RSAT_matrix_sites:
 
         SITES_FILE=` ls {params.results_dir}/$MOTIF_ID/*.ft `
 
-        cat $SITES_FILE | grep -v '^;' | grep -v '^#' > {output}
+        cat $SITES_FILE | grep $MOTIF_ID_NB | grep -v '^;' | grep -v '^#' > {output}
         """
 
 

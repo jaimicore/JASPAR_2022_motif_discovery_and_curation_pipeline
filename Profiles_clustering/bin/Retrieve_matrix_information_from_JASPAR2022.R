@@ -49,7 +49,7 @@ version      <- opt$version
 # profileID <- "UN0105.1"
 get_info_from_api <- function(profileID) {
   
-  indiv.jaspar.url <- paste0("http://testjaspar.uio.no/api/v1/matrix/", profileID, "/?format=json")
+  indiv.jaspar.url <- paste0("http://jaspar.uio.no/api/v1/matrix/", profileID, "/?format=json")
   indiv.mat.info <- fromJSON(indiv.jaspar.url)
   indiv.mat.info
 } 
@@ -70,9 +70,9 @@ message("; Retrieving ", collection, " collection information from Jaspar API fo
 
 ## Getting the page size:
 if (version == "nonredundant") {
-  initial.jaspar.url <- paste0("http://testjaspar.uio.no/api/v1/matrix/?collection=", collection, "&tax_group=", taxon, "&version=latest")
+  initial.jaspar.url <- paste0("http://jaspar.uio.no/api/v1/matrix/?collection=", collection, "&tax_group=", taxon, "&version=latest")
 } else {
-  initial.jaspar.url <- paste0("http://testjaspar.uio.no/api/v1/matrix/?collection=", collection, "&tax_group=", taxon)
+  initial.jaspar.url <- paste0("http://jaspar.uio.no/api/v1/matrix/?collection=", collection, "&tax_group=", taxon)
 }
 
 
@@ -93,11 +93,11 @@ for (i in 1:nb_pages) {
   
   # ## Requesting all matrices:
   if (version == "nonredundant") {
-    jaspar.url <- paste0("http://testjaspar.uio.no/api/v1/matrix/?page=", i, "&page_size=", group.size,"&collection=", collection, "&tax_group=", taxon, "&version=latest&?format=json")
+    jaspar.url <- paste0("http://jaspar.uio.no/api/v1/matrix/?page=", i, "&page_size=", group.size,"&collection=", collection, "&tax_group=", taxon, "&version=latest&?format=json")
   } else {
-    jaspar.url <- paste0("http://testjaspar.uio.no/api/v1/matrix/?page=", i, "&page_size=", group.size,"&collection=", collection, "&tax_group=", taxon, "&?format=json")
+    jaspar.url <- paste0("http://jaspar.uio.no/api/v1/matrix/?page=", i, "&page_size=", group.size,"&collection=", collection, "&tax_group=", taxon, "&?format=json")
   }
-  # jaspar.url <- paste0("http://testjaspar.uio.no/api/v1/matrix/?page=", i, "&page_size=1000&collection=CORE&?tax_group=", taxon, "&version=latest&?format=json")
+  # jaspar.url <- paste0("http://jaspar.uio.no/api/v1/matrix/?page=", i, "&page_size=1000&collection=CORE&?tax_group=", taxon, "&version=latest&?format=json")
   print(jaspar.url)
   result <- fromJSON(jaspar.url)
   

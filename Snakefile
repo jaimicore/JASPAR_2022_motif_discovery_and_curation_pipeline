@@ -60,7 +60,8 @@ rule all:
         JASPAR_ANN_TAB, \
         expand(os.path.join(config["curation_dir"], "Renamed_log_pval_{logpval}.txt"), logpval = LOGPVAL), \
 	expand(os.path.join(config["curation_dir"], "Selected_motifs_to_curate_log10_pval_{logpval}.tab"), logpval = LOGPVAL), \
-        expand(os.path.join(config["curation_dir"], "Selected_motifs_to_curate_log10_pval_{logpval}.pdf"), logpval = LOGPVAL)
+        expand(os.path.join(config["curation_dir"], "Selected_motifs_to_curate_log10_pval_{logpval}.pdf"), logpval = LOGPVAL), \
+        os.path.join(config["curation_dir"], "Check_sites_concat.tab")
 
         
 
@@ -284,7 +285,7 @@ checkpoint  RSAT_PSSM_to_JASPAR_format:
         out_dir = os.path.join(config["out_dir"], "{TF}", "motifs", "jaspar", "pfm")
     shell:
         """
-        mkdir -m 007 -p {params.out_dir} ;
+        mkdir -p {params.out_dir} ;
         {params.RSAT}/perl-scripts/convert-matrix -v 2 \
         -from tf -to jaspar \
         -i {input} \
@@ -299,7 +300,7 @@ checkpoint  RSAT_PSSM_to_JASPAR_format:
         -return {params.return_fields} \
         -split \
         -prefix {params.prefix} \
-        -o {params.prefix_motif}
+        -o {params.prefix_motif} ;
         
         {params.RSAT}/perl-scripts/convert-matrix -v 2 \
         -from tf -to tf \
@@ -307,7 +308,7 @@ checkpoint  RSAT_PSSM_to_JASPAR_format:
         -return {params.return_fields} \
         -split \
         -prefix {params.prefix} \
-        -o {params.prefix_motif}
+        -o {params.prefix_motif} ;
         """
 
 
@@ -470,6 +471,36 @@ rule get_RSAT_matrix_sites_fasta:
         """
 
 
+rule count_PFM_BED_FASTA_sites:
+     """
+     """
+     input:
+          fasta = os.path.join(config["out_dir"], "{TF}", "matrix_sites", "{TF}_peak-motifs_m{n}.tf.sites.fasta"), \
+          bed   = os.path.join(config["out_dir"], "{TF}", "matrix_sites", "{TF}_peak-motifs_m{n}.tf.sites.bed"), \
+          pfm   = os.path.join(config["out_dir"], "{TF}", "motifs", "jaspar", "pfm", "{TF}_peak-motifs_m{n}.jaspar")
+     output:
+           os.path.join(config["out_dir"], "{TF}", "matrix_sites", "{TF}_peak-motifs_m{n}.tf.sites.check.txt")
+     message:
+          "; Finding discrepancies among PFM sum, number of BED coordinates and number of FASTA sequences"
+     priority:
+          89
+     shell:
+          """
+          
+          nb_seqs=$(grep ">" {input.fasta} | wc -l) ;
+
+          nb_regions=$(cat {input.bed} | wc -l) ;
+
+          nb_pfm_sites=$(grep -v '>' {input.pfm} | perl -lne ' $_ =~ s/[ACGT\\[\\]]//gi; $_ =~ s/^\\s+//gi; $_ =~ s/\\s+/\\t/g; print $_; ' | perl -lane '$j=0; foreach $i (@F){{$sum[$j]+=$i; $j+=1;}}; END{{print join("\\n",@sum)}} ' | uniq  | xargs  | sed 's/ /,/g')
+
+          printf "{wildcards.TF}_peak-motifs_m{wildcards.n}\\t$nb_seqs\\t$nb_regions\\t$nb_pfm_sites\\n" | awk '{{ if ($2 == $3 && $2 == $4) {{ print $0"\t1"}} else {{ print $0"\t0" }} }}' > {output}
+          
+          """  
+
+
+
+
+
 ######################################################
 ## Motif centrality section:                        ##
 ## scan extended peaks + centrality p-value + plots ##
@@ -480,6 +511,7 @@ rule Scan_JASPAR_PWM:
     This rule is executed for each discovered motif.
     """
     input:
+        check_table= os.path.join(config["out_dir"], "{TF}", "matrix_sites", "{TF}_peak-motifs_m{n}.tf.sites.check.txt"), \
         logos = os.path.join(config["out_dir"], "{TF}", "motifs", "jaspar", "logos", "{TF}_peak-motifs_m{n}_logo.png"), \
         pwm = os.path.join(config["out_dir"], "{TF}", "motifs", "jaspar", "pwm", "{TF}_peak-motifs_m{n}.jaspar.pssm"), \
         peaks = os.path.join(config["out_dir"], "{TF}", "fasta", "{TF}.501bp.fa"), \
@@ -491,7 +523,7 @@ rule Scan_JASPAR_PWM:
     params:
         scripts_bin = config["bin"]
     priority:
-        89
+        88
     shell:
         """
         {params.scripts_bin}/pwm_searchPFF {input.pwm} {input.peaks} 0.85 -b > {output}
@@ -514,7 +546,7 @@ rule Calculate_centrimo_pvalue:
         scripts_bin = config["bin"],
         centrimo_folder = os.path.join(config["out_dir"], "{TF}", "central_enrichment")
     priority:
-        88
+        87
     shell:
         """
         mkdir -m 077 -p {params.centrimo_folder} ;
@@ -539,7 +571,7 @@ rule generate_centrimo_plots:
     params:
         scripts_bin = config["bin"]
     priority:
-        87
+        86
     shell:
         """
         R --vanilla --slave --silent -f {params.scripts_bin}/centrimo_plot.R --args {input.fa} {output}
@@ -585,7 +617,7 @@ rule JASPAR_annotation_table:
         taxon = config["taxon"],
         out_dir = config["out_dir"]
     priority:
-        86
+        85
     shell:
        """
        Rscript {params.scripts_bin}/Retrieve_matrix_information_from_JASPAR2020.R -o {params.out_dir} -t {params.taxon}
@@ -608,7 +640,7 @@ rule choose_best_centrimo_experiment:
         centrimo_dir = os.path.join(config["out_dir"], "{TF}", "central_enrichment"),
         nbmotifs     = config['top_motifs']
     priority:
-        85
+        84
     shell:
         """
         bash {params.scripts_bin}/best_centrimo.sh -i {params.centrimo_dir} -m {params.nbmotifs} > {output}
@@ -630,7 +662,7 @@ rule annotate_best_centrimo_experiment:
     params:
         scripts_bin = config["bin"]
     priority:
-        84
+        83
     shell:
         """
         bash {params.scripts_bin}/annotate_best_centrimo_experiment.sh {input.best_exp} {input.tf_jaspar_map} {output}
@@ -657,12 +689,31 @@ rule best_centrimo_experiment_logo:
         scripts_bin = config["bin"],
 	logpval     = config['central_pvalue']
     priority:
-        83
+        82
     shell:
         """
         bash {params.scripts_bin}/create_latex_logos.sh -l {params.scripts_bin}/latex_header.txt -i {input} -o {output} -t {params.logpval}
         """
 
+
+rule concat_check_tab:
+     """
+     """
+     input:
+          MOST_ENRICHED_MOTIF_ASSOC_LOGO
+     output:
+          os.path.join(config["curation_dir"], "Check_sites_concat.tab")
+     message:
+          "; Concatenating Sites check tables"
+     priority:
+          81
+     params:
+          out_dir = os.path.join(config["out_dir"])
+     shell:
+          """
+          cat {params.out_dir}/*/matrix_sites/*.check.txt | sed '1 i\\Motif_ID\\tFASTA_seq\\tBED_reg\\tPFM_sites\\tCheck' > {output}
+          """
+     
 
 rule Concat_annotated_experiments:
     """
@@ -676,7 +727,7 @@ rule Concat_annotated_experiments:
         "; Concatenating the tables with the annotated experiments and the centrality p-value "
     params: out_dir = config["out_dir"]
     priority:
-        82
+        80
     shell:
         """
         ls {params.out_dir}/*/central_enrichment/selected_motif/*.501bp.fa.sites.centrimo.best.TF_associated | xargs cat > {output}
@@ -696,7 +747,7 @@ rule Select_motifs_to_curate:
     params:
         central_pval = config["central_pvalue"]
     priority:
-        81
+        79
     shell:
         """
         cat {input} | awk -F"\t" '{{ if ($17 >= {params.central_pval}) {{ print }} }}' | uniq > {output}
@@ -719,7 +770,7 @@ rule rename_jaspar_motif_header:
     message:
         "; Renaming jaspar motif header"
     priority:
-        80
+        78
     shell:
         """
         perl -lne '@sl = split(/\\t/, $_); \
@@ -743,7 +794,7 @@ rule Motifs_to_curate_PDF:
         "; Concatenating PDFs with the motifs to curate "
     params: central_pval = config["central_pvalue"]
     priority:
-        79
+        77
     shell:
         """
         PDF_FILES=` awk -F"\t" '{{ if($17 >= {params.central_pval}){{ print $20 }}}}' {input} | uniq | xargs `

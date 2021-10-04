@@ -53,13 +53,13 @@ ARCHETYPE_NAMES = expand(os.path.join(RESULTS_DIR, "JASPAR_2022_matrix_clusterin
 rule all:
     input: UNVALIDATED_IDS,          \
            PARSE_MOTIF_IDS,          \           
-           #MOTIFS_METADATA,          \
-           #ANNOTATION_TABLES,        \
-           #PARSE_ANNOTATION_TABLES,  \
-           #HTML_TF_CLASS_COLOUR,     \
-           #CLUSTERING_RADIAL,        \
-           #TF_CLASS_BARPLOTS,        \
-           #CLUSTERING_INTERACTIVE,   \
+           MOTIFS_METADATA,          \
+           ANNOTATION_TABLES,        \
+           PARSE_ANNOTATION_TABLES,  \
+           HTML_TF_CLASS_COLOUR,     \
+           CLUSTERING_RADIAL,        \
+           TF_CLASS_BARPLOTS,        \
+           CLUSTERING_INTERACTIVE,   \
            #CLUSTERING_ARCHETYPES,    \
            #ARCHETYPE_NAMES
 
@@ -78,7 +78,7 @@ rule download_JASPAR_CORE_motifs:
           "Downloading JASPAR CORE {wildcards.taxon} motifs"
      shell:
           """
-          wget https://https://jaspar.uio.no/https://jaspar.uio.no//download/data/2022/CORE/JASPAR2022_CORE_{wildcards.taxon}_non-redundant_pfms_transfac.txt -O {output}
+          wget https://jaspar.uio.no/download/data/2022/CORE/JASPAR2022_CORE_{wildcards.taxon}_non-redundant_pfms_transfac.txt --no-check-certificate -O {output}
           """
 
 
@@ -96,7 +96,7 @@ rule download_JASPAR_UNVALIDATED_motifs:
           "Downloading JASPAR Unvalidated motifs"
      shell:
           """
-          wget https://https://jaspar.uio.no/download/data/2022/collections/JASPAR2022_UNVALIDATED_redundant_pfms_transfac.txt -O {output}
+          wget https://jaspar.uio.no/download/data/2022/collections/JASPAR2022_UNVALIDATED_non-redundant_pfms_transfac.txt --no-check-certificate -O {output}
           """
 
 
@@ -265,7 +265,7 @@ rule JASPAR_2022_ANNOTATION_TAB:
           "Generating annotation table for display TF class info in the radial tree : {wildcards.taxon} {wildcards.collection}"
      shell:
           """
-          more {input} | grep {wildcards.taxon} | awk -F "\\t" '{{ print $1"."$2"\\t"$3"\\thttps://https://jaspar.uio.no/matrix/"$1"."$2"/\\t#\\t"$6}}' | sed '1 i\matrix_id\\tname\\tURL\\tcolour\\tclass' > {output}
+          more {input} | grep {wildcards.taxon} | awk -F "\\t" '{{ print $1"."$2"\\t"$3"\\thttps://jaspar.uio.no/matrix/"$1"."$2"/\\t#\\t"$6}}' | sed '1 i\matrix_id\\tname\\tURL\\tcolour\\tclass' > {output}
           """
 
 

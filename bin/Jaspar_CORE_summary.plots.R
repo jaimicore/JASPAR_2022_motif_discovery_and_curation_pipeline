@@ -6,7 +6,6 @@ required.libraries <- c("data.table",
                         "ggplot2",
                         "optparse",
                         "plotly",
-                        # "RColorBrewer",
                         "reshape2",
                         "rcartocolor",
                         "tidyr")
@@ -44,7 +43,7 @@ motifs.per.taxon.tab.file <- opt$input_table
 plotly.export             <- as.numeric(opt$plotly_server)
 
 
-# motifs.per.taxon.tab.file <- "/home/jamondra/Downloads/Motifs_per_taxon_per_release.txt"
+# motifs.per.taxon.tab.file <- "/home/jamondra/Downloads/JASPAR_2022_plots/Motifs_per_taxon_per_release.txt"
 # results.dir               <- "/home/jamondra/Downloads/JASPAR_2022_plots"
 # plotly.export <- 1
 
@@ -120,84 +119,30 @@ for (collection in c("CORE", "UNVALIDATED")) {
   
   message("; Plots for JASPAR ", collection, " collection")
   
-  ################
-  ## Line chart ##
-  ################
-  nb.motfs.per.release.gg <- nb.motfs.per.release %>% 
-                                dplyr::filter(Collection == collection) %>% 
-                                drop_na(Year, Nb_motifs) %>% 
-                             ggplot(aes(x = as.factor(Year), y = Nb_motifs, color = Taxon, group = Taxon)) +
-                                geom_line(size = 2) +
-                                geom_point(size = 4, shape = 21, fill = "white") + 
-                                scale_colour_manual(values = cols) +
-                                theme_classic() +
-                                labs(title = paste0("JASPAR ", collection, " data growth per release"), y = "# Profiles", x = "Year of release")
-                            
-  ggsave(plot     = nb.motfs.per.release.gg,
-         filename = file.path(results.dir, paste0("Jaspar_", collection, "_growth_lines.pdf")),
-         width    = 9.5,
-         height   = 7.5)
-  
-  nb.motfs.per.release.gg <- ggplotly(nb.motfs.per.release.gg,
-                                      tooltip = c("y", "x", "group"))
-  
-  htmlwidgets::saveWidget(nb.motfs.per.release.gg, file.path(results.dir, paste0("Jaspar_", collection, "growth_lines.html")))
-  message("; Line chart ready")
-  
-  
-  
-  ################
-  ## Donut plot ##
-  ################
-  jaspar.donut <- nb.motfs.per.release %>% 
-    dplyr::filter(Collection == collection) %>% 
-    drop_na(Year, Nb_motifs) %>% 
-    dplyr::filter(Year == release.year & Taxon != "All_taxa") %>% 
-    ggplot(aes(x = 2, y = Nb_motifs, fill = Taxon)) +
-    geom_bar(width = 1, stat = "identity") +
-    coord_polar("y", start = 0) +
-    xlim(0.5, 2.5) +
-    scale_fill_manual(values = cols) +
-    theme_void()
-  
-  ggsave(plot     = jaspar.donut,
-         filename = file.path(results.dir, paste0("Jaspar_", collection, "_", release.year,"_pie-donut.pdf")),
-         width    = 9.5,
-         height   = 7.5)
-  
-  ## Generate the donut plot
-  jaspar.donut <- 
-    nb.motfs.per.release %>% 
-    dplyr::filter(Collection == collection) %>% 
-    drop_na(Year, Nb_motifs) %>% 
-    dplyr::filter(Year == release.year & Taxon != "All_taxa") %>% 
-    group_by(Taxon) %>% 
-    plot_ly(labels = ~Taxon, values = ~Nb_motifs) %>%
-    add_pie(hole = 0.6) %>%
-    layout(title = paste0("JASPAR ", release.year, " ", collection),  showlegend = TRUE,
-           xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = TRUE),
-           yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = TRUE), colorway = tax.cols)
-  
-  htmlwidgets::saveWidget(jaspar.donut, file.path(results.dir, paste0("Jaspar_", collection, "_", release.year,"_pie-donut.html")))
-  message("; Donut chart ready")
-  
-  
   ##############
   ## Bar plot ##
   ##############
-  jaspar.bars <- nb.motfs.per.release %>% 
-                    dplyr::filter(Taxon != "All_taxa") %>% 
-                    dplyr::filter(Collection == collection) %>% 
-                    drop_na(Year, Nb_motifs) %>% 
-                 ggplot(aes(x=Year, y=Nb_motifs, fill=Taxon)) +
-                    geom_bar(stat = "identity", position = "stack") +
-                    scale_fill_manual(values = cols) +
-                    theme_classic() +
-                    theme(text = element_text(size = 15),
-                          axis.text.x = element_text(angle = 45, hjust = 1, size = 20),
-                          axis.text.y = element_text(hjust = 1, size = 20)) +
-                    labs(title = paste0("JASPAR ", collection, " data growth"), y = "# Profiles", x = "Year of release") +
-                    theme(plot.title = element_text(hjust = 0.5))
+  nb.motifs.per.release.subset <- nb.motfs.per.release %>% 
+    dplyr::filter(Taxon != "All_taxa") %>% 
+    dplyr::filter(Collection == collection) %>% 
+    drop_na(Year, Nb_motifs) %>% 
+    group_by(Year) %>% 
+    mutate(Sum_release = sum(Nb_motifs))
+  
+  max.y       <-  max(nb.motifs.per.release.subset$Sum_release)
+  jaspar.bars <-  ggplot(nb.motifs.per.release.subset, aes(x=Year, y=Nb_motifs, fill=Taxon)) +
+    geom_bar(stat = "identity", position = "stack") +
+    scale_fill_manual(values = cols) +
+    theme_classic() +
+    theme(text               = element_text(size = 15),
+          axis.text.x        = element_text(angle = 45, hjust = 1, size = 20),
+          axis.text.y         = element_text(hjust = 1, size = 20),
+          panel.grid.major.y = element_line(color = "#969696",
+                                            size = 0.25,
+                                            linetype = 2)) +
+    labs(title = paste0("JASPAR ", collection, " data growth"), y = "# Profiles", x = "Year of release") +
+    theme(plot.title = element_text(hjust = 0.5)) +
+    scale_y_continuous(limits = c(0, max.y), expand = c(0.015,0), breaks = seq(0, max.y, by = 500)[-1])
   
   
   ggsave(plot     = jaspar.bars,
@@ -213,6 +158,72 @@ for (collection in c("CORE", "UNVALIDATED")) {
   message("; Bar chart ready")
   
   
+  ################
+  ## Line chart ##
+  ################
+  nb.motfs.per.release.gg <- nb.motfs.per.release %>% 
+                                dplyr::filter(Collection == collection) %>% 
+                                drop_na(Year, Nb_motifs) %>% 
+                             ggplot(aes(x = as.factor(Year), y = Nb_motifs, color = Taxon, group = Taxon)) +
+                                geom_line(size = 2) +
+                                geom_point(size = 4, shape = 21, fill = "white") + 
+                                scale_colour_manual(values = cols) +
+                                theme_classic() +
+                                labs(title = paste0("JASPAR ", collection, " data growth per release"), y = "# Profiles", x = "Year of release") +
+                                theme(panel.grid.major.y = element_line(color = "#969696",
+                                                                        size = 0.25,
+                                                                        linetype = 2)) +
+                                scale_y_continuous(limits = c(0, max.y), expand = c(0.015,0), breaks = seq(0, max.y, by = 500)[-1])
+                            
+  ggsave(plot     = nb.motfs.per.release.gg,
+         filename = file.path(results.dir, paste0("Jaspar_", collection, "_growth_lines.pdf")),
+         width    = 9.5,
+         height   = 7.5)
+  
+  nb.motfs.per.release.gg <- ggplotly(nb.motfs.per.release.gg,
+                                      tooltip = c("y", "x", "group"))
+  
+  htmlwidgets::saveWidget(nb.motfs.per.release.gg, file.path(results.dir, paste0("Jaspar_", collection, "_growth_lines.html")))
+  message("; Line chart ready")
+  
+  
+  
+  ################
+  ## Donut plot ##
+  ################
+  # jaspar.donut <- nb.motfs.per.release %>% 
+  #   dplyr::filter(Collection == collection) %>% 
+  #   drop_na(Year, Nb_motifs) %>% 
+  #   dplyr::filter(Year == release.year & Taxon != "All_taxa") %>% 
+  #   ggplot(aes(x = 2, y = Nb_motifs, fill = Taxon)) +
+  #   geom_bar(width = 1, stat = "identity") +
+  #   coord_polar("y", start = 0) +
+  #   xlim(0.5, 2.5) +
+  #   scale_fill_manual(values = cols) +
+  #   theme_void()
+  # 
+  # ggsave(plot     = jaspar.donut,
+  #        filename = file.path(results.dir, paste0("Jaspar_", collection, "_", release.year,"_pie-donut.pdf")),
+  #        width    = 9.5,
+  #        height   = 7.5)
+  # 
+  # ## Generate the donut plot
+  # jaspar.donut <- 
+  #   nb.motfs.per.release %>% 
+  #   dplyr::filter(Collection == collection) %>% 
+  #   drop_na(Year, Nb_motifs) %>% 
+  #   dplyr::filter(Year == release.year & Taxon != "All_taxa") %>% 
+  #   group_by(Taxon) %>% 
+  #   plot_ly(labels = ~Taxon, values = ~Nb_motifs) %>%
+  #   add_pie(hole = 0.6) %>%
+  #   layout(title = paste0("JASPAR ", release.year, " ", collection),  showlegend = TRUE,
+  #          xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = TRUE),
+  #          yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = TRUE), colorway = tax.cols)
+  # 
+  # htmlwidgets::saveWidget(jaspar.donut, file.path(results.dir, paste0("Jaspar_", collection, "_", release.year,"_pie-donut.html")))
+  # message("; Donut chart ready")
+  
+  
   #########################################################
   ## If required, upload the plots at the plotly website ##
   #########################################################
@@ -220,8 +231,8 @@ for (collection in c("CORE", "UNVALIDATED")) {
     
     # Create a shareable link to the charts
     # Set up API credentials: https://plot.ly/r/getting-started
-    api_create(nb.motfs.per.release.gg, filename = paste0("JASPAR_", collection,"_growth_line_plot"))
-    api_create(jaspar.donut, filename = paste0("Jaspar_", release.year, "_", collection, "_pie-donut"))
     api_create(jaspar.bars, filename = paste0("Jaspar_", release.year, "_", collection, "_bars"))
+    api_create(nb.motfs.per.release.gg, filename = paste0("JASPAR_", collection,"_growth_line_plot"))
+    # api_create(jaspar.donut, filename = paste0("Jaspar_", release.year, "_", collection, "_pie-donut"))
   }
 }

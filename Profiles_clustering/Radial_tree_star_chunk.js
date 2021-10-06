@@ -37,7 +37,7 @@
 ////////////////////////////////
 // Insert after image section //
 ////////////////////////////////
- 	var innerRad_start = 200;
+ 	var innerRad_start = 205;
  	var innerRad_end = 450;
  
  	
@@ -73,25 +73,26 @@
               .innerRadius(innerRad_end)         // This is the size of the donut hole
               .outerRadius(innerRad_end + (30*1))
             )
-            .attr('fill', 'white')
+            .attr('fill', function(d){return(d.class)})
             .attr('stroke', 'white')
-            .style('stroke-width', '0px')
+            .attr('transform', 'translate(0,0)')
+            .style('stroke-width', '2px')
             .style('opacity', 1);
             
 
         // Color algorithm Non-Validated text layer
-        vis.selectAll('annotations')
+        vis.selectAll('annotation1')
             .data(data_sample)
             .enter()
             .append('text')
-            .attr('dy', 38)
-            .attr('x',43)
-            .style('font-size', '50px')
+            .attr('dy', 20)
+            .attr('x',33)
+            .style('font-size', '15px')
             .append('textPath')
             .attr('startOffset','50%')
             .style('text-anchor','middle')
-            .attr('stroke','black')
-            .attr('fill','black')
+            //.attr('stroke','black')
+            //.attr('fill','black')
             .attr('xlink:href', function(d,i){return('#path' + i) })
             .text(function(d){
               var token = d.matrix_name.split('_').slice(-2).slice(0);
@@ -102,27 +103,8 @@
                 var text_content = d.class_nb;
               }
               return(text_content);
-            });
-            //.style('font-size', '60px');
-                        
-            
-        // Color algorithm Non-Validated text layer
-            vis.selectAll('annotations')
-                .data(data_sample)
-                .enter()
-                .append('path')
-                .attr('class','annotation2')
-                .attr('d', d3.svg.arc()
-                  .startAngle(function(d){ return( d.start * (Math.PI/180) ) }  )  //converting from degs to radians
-                  .endAngle(function(d){ return( d.end * (Math.PI/180) ) }  ) //just radians
-                  .innerRadius(innerRad_end + (30*1))         // This is the size of the donut hole
-                  .outerRadius(innerRad_end + (30*2))
-                )
-                .attr('fill', function(d){return(d.class)})
-                .attr('stroke', 'white')
-                .attr('transform', 'translate(0,0)')
-                .style('stroke-width', '2px')
-                .style('opacity', 1);
+            })
+            ;
 
 //////////////////////////////////
 // Insert before g.text section //

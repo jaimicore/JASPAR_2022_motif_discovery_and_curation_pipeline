@@ -39,8 +39,8 @@ version      <- opt$version
 # taxon      <- "Nematodes"
 # out.folder <- "/run/user/316574/gvfs/sftp:host=biotin2.hpc.uio.no/storage/mathelierarea/processed/ieva/projects/JASPAR_2022/metadata_script_output_testing"
 # ## out.folder <- "/run/user/280010/gvfs/sftp:host=biotin2.hpc.uio.no,user=jamondra/storage/mathelierarea/processed/jamondra/Projects/JASPAR/JASPAR_2022/Annotation_table/Example"
-# collection <- "UNVALIDATED"
-# version    <- "rnonredundant"
+# collection <- "CORE"
+# version    <- "nonredundant"
 
 
 ###############
@@ -146,7 +146,7 @@ for (i in 1:nb_pages) {
   ## Species is a nested list with two entries: name and tax_id.
   ## They must be processed separately
   species.df <- data.frame( species = do.call(rbind, lapply(map(all.profiles.info.subset, c("species", "name")), paste, collapse = "::") ))
-  tax.id.df <- data.frame( tax_id = do.call(rbind, lapply(map(all.profiles.info.subset, c("species", "tax_id")), paste, collapse = "::") ))
+  tax.id.df  <- data.frame( tax_id = do.call(rbind, lapply(map(all.profiles.info.subset, c("species", "tax_id")), paste, collapse = "::") ))
   
   ## Family/Class/Uniprot_ids may contain two or more entries (e.g., dimers), therefore, they must be processed separately
   family.df <- data.frame( family = do.call(rbind, lapply(map(all.profiles.info.subset, "family"), paste, collapse = "::") ))

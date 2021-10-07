@@ -92,23 +92,15 @@ motif.names <- merge.data.table(cluster.assignment, metadata, by = "ID") %>%
                   select(ID, name, cluster, class, family)
   
   
-###################################################
-## Separate singleton and non-singleton clusters ##
-###################################################
-message("; Separating singleton and non-singleton clusters")
-nb.motifs.per.cluster <- table(motif.names$cluster)
-singleton.clusters    <- as.numeric(names(nb.motifs.per.cluster[which(nb.motifs.per.cluster == 1)])) ## Clusters of size 1
-nb.motifs.per.cluster <- nb.motifs.per.cluster[which(nb.motifs.per.cluster > 1)] ## Remove clusters of size 1
-cluster.order         <- as.numeric(names(sort(nb.motifs.per.cluster, decreasing = T)))
-  
-message("; Singleton clusters: ", length(singleton.clusters))
-message("; Non-Singleton clusters: ", length(cluster.order))
-  
-  
 #################################################
 ## Count the number of classes on each cluster ##
 #################################################
+
 message("; Counting the number of TF classes on each cluster")
+nb.motifs.per.cluster <- table(motif.names$cluster)
+cluster.order         <- as.numeric(names(sort(nb.motifs.per.cluster, decreasing = T)))
+
+
 classes.per.cluster.list <- vector(mode = "list", length = length(cluster.order))
 classes.per.cluster.list <- lapply(cluster.order, function(cl){
     
@@ -133,7 +125,7 @@ classes.per.cluster.list <- lapply(cluster.order, function(cl){
     cluster.tf.classes
     
 })
-classes.per.cluster.list <- rbindlist(classes.per.cluster.list)  
+classes.per.cluster.list <- data.table::rbindlist(classes.per.cluster.list)  
   
   
 #####################################################
@@ -152,17 +144,6 @@ cluster.fbp <- classes.per.cluster.list %>%
                 data.table()
 
   
-singleton.fbp <- motif.names %>% 
-                  dplyr::filter(cluster %in% singleton.clusters) %>% 
-                  select(cluster, name) %>% 
-                  rename(fbp = name)
-  
-cluster.fbp <- rbind(cluster.fbp, singleton.fbp)
-  
-# length(unique(cluster.fbp$cluster))
-# length(cluster.fbp$cluster)
-  
-
 #################################
 ## Assign a number to each FBP ##
 #################################
@@ -182,12 +163,6 @@ cluster.fbp <- merge(cluster.fbp, motif.names, by = "cluster") %>%
                        N   = n()) %>% 
                 select(cluster, FBP, N, TFs, ID) %>% 
                 distinct()
-  
-cluster.fbp <- cluster.fbp %>% 
-                mutate(FBP = ifelse(N == 1,
-                                    yes = gsub(FBP, pattern = "::1", replacement = ""),
-                                    no  = FBP))
-  
 
 
 #############################

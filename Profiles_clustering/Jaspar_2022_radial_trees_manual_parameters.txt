@@ -11,4 +11,4 @@ Fungi,UNVALIDATED,231,235,-10,20,20,2.5,2200,605 1000,"[360,600]",,"rx,ry=2.1",8
 Plants,CORE,656,190,-8,18,15.5,3.5,3550,1305 1730,"[360,1300]","13px, dy=13, x=13","rx,ry=1.98",850,https://chart-studio.plotly.com/~jaimicore/109
 Plants,UNVALIDATED,769,190,-8,18,15.5,3.5,4000,1505 1933,"[360,1500]","11px, dy=12, x=31","rx,ry=2",1050,https://chart-studio.plotly.com/~jaimicore/110
 Vertebrates,CORE,841,120,-8,18,15.5,3.5,4300,1705 2050,"[360,1700]","10px, dy=11, x=31","rx,ry=2.05",925,https://chart-studio.plotly.com/~jaimicore/111
-Vertebrates,UNVALIDATED,1178,160,-8,15,15.5,3.5,5775,2455 2860,"[360,2450]","10px, dy=11, x=30","rx,ry=2",1100px,https://chart-studio.plotly.com/~jaimicore/112
+Vertebrates,UNVALIDATED,1178,140,-8,15,15.5,4,5775,2455 2820,"[360,2450]","10px, dy=11, x=30","rx,ry=2",1050,https://chart-studio.plotly.com/~jaimicore/112

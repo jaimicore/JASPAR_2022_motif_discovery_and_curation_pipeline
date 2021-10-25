@@ -18,12 +18,12 @@ do
   dset=$(dirname $file)
   dset=$(dirname $dset)
 
-  jaspar_file=$(find $dset/motifs/jaspar/pfm/ -name ${file_bname_motif_parts[0]}"_"${file_bname_motif_parts[1]}"_"${file_bname_motif_parts[2]}"_peak-motifs_"${file_bname_motif_parts[3]}".jaspar")
+  jaspar_file=$(find $dset/motifs/jaspar/pfm/ -name ${file_bname_motif_parts[0]}"_peak-motifs_"${file_bname_motif_parts[1]}".jaspar")
 
   current_base_id="NULL"
   current_version="NULL"
 
-  TF=${file_bname_motif_parts[1]}
+  TF=${file_bname_motif_parts[0]}
 
   uniprot="NULL"
   TAX_ID="NULL"
@@ -36,19 +36,19 @@ do
   comment="NULL"
   add_upgrade_nonval="NULL"
 
-  sites_bed_file=$(echo ${dset}/matrix_sites/${file_bname_motif_parts[0]}"_"${file_bname_motif_parts[1]}"_"${file_bname_motif_parts[2]}"_peak-motifs_"${file_bname_motif_parts[3]}".tf.sites.bed")
+  sites_bed_file=$(echo ${dset}/matrix_sites/${file_bname_motif_parts[0]}"_peak-motifs_"${file_bname_motif_parts[1]}".tf.sites.bed")
 
-  sites_fa_file=${sites_bed_file//".bed"/".fa"}
+  sites_fa_file=${sites_bed_file//".bed"/".fasta"}
 
   #centrimo_pdf_file=$(find $dset/central_enrichment -name ${file_bname_motif_parts[0]}"_"${file_bname_motif_parts[1]}"_"${file_bname_motif_parts[2]}"_"${file_bname_motif_parts[3]}".501bp.fa.sites.centrimo.pdf")
 
-  logo_file=$(find $dset/motifs/jaspar/logos/ -name ${file_bname_motif_parts[0]}"_"${file_bname_motif_parts[1]}"_"${file_bname_motif_parts[2]}"_peak-motifs_"${file_bname_motif_parts[3]}"_logo.png")
+  logo_file=$(find $dset/motifs/jaspar/logos/ -name ${file_bname_motif_parts[0]}"_peak-motifs_"${file_bname_motif_parts[1]}"_logo.png")
 
   dset_id=$(basename $dset)
 
-  pdf_selected=${dset}/central_enrichment/selected_motif/${file_bname_motif_parts[0]}_${file_bname_motif_parts[1]}_${file_bname_motif_parts[2]}.501bp.fa.sites.centrimo.best.TF_associated.pdf
+  pdf_selected=${dset}/central_enrichment/selected_motif/${file_bname_motif_parts[0]}.501bp.fa.sites.centrimo.best.TF_associated.pdf
 
-  centrimo_png_file=$(echo ${dset}/central_enrichment/${file_bname_motif_parts[0]}"_"${file_bname_motif_parts[1]}"_"${file_bname_motif_parts[2]}"_"${file_bname_motif_parts[3]}"_501bp_fa_sites_centrimo.png")
+  centrimo_png_file=$(echo ${dset}/central_enrichment/${file_bname_motif_parts[0]}"_"${file_bname_motif_parts[1]}"_501bp_fa_sites_centrimo.png")
 
   printf "${jaspar_file}\t${current_base_id}\t${current_version}\t${TF}\t${uniprot}\t${TAX_ID}\t${class}\t${family}\t${TFBSshapeID}\t${dset_id}\t${source}\t${validation}\t${comment}\t${add_upgrade_nonval}\t${sites_bed_file}\t${sites_fa_file}\t${pval}\t${centrimo_png_file}\t${logo_file}\t${pdf_selected}\n" >> $output
 

@@ -13,14 +13,22 @@ from snakemake.utils import R
 ## Select config file according to the given command line argument ##
 ## snakemake --config analysis_id=REMAP2022_Human                  ##
 #####################################################################
-if config['analysis_id'] == "ReMap2020_Human":
+if config['analysis_id'] == "ReMap2022_Human":
     configfile: "config_files/config_Hsapiens_hg38.yaml"
+elif config['analysis_id'] == "ReMap2022_Dmelanogaster":
+    configfile: "config_files/config_Dmel_dm6.yaml"
+elif config['analysis_id'] == "ReMap2022_Mmusculus":
+    configfile: "config_files/config_Mmusculus_mm10.yaml"
 elif config['analysis_id'] == "ChExMix_sacCer3":
     configfile: "config_files/config_yeast_sacCer3_chexmix.yaml"
 elif config['analysis_id'] == "ReMap2020_Athaliana":
     configfile: "config_files/config_Athaliana_TAR10_REMAP.yaml"
 else :
-    print("; ERROR: analysis name not found. Supported: ReMap2020_Human | ReMap2020_Athaliana | ChExMix_sacCer3")
+    print("; ERROR: analysis name not found. Supported: ReMap2022_Human | ReMap2020_Athaliana | ReMap2022_Dmelanogaster | ReMap2022_Mmusculus | ChExMix_sacCer3 ")
+
+## RGAP-7.0
+## IRGSP-1.0
+     
 
 
 ##########################
@@ -73,32 +81,33 @@ rule all:
 ## This rule may vary according to the data source ##
 #####################################################
 
-#############################
-## REMAP 2022 Homo sapiens ##
-#############################
-if config['analysis_id'] == "ReMap2020_Human":
-    
-    rule extract_peak_summits:
-        """
-        Extract peak summits: chromosome, start, end
-        """
-        input:
-            os.path.join(config["data_folder"], "{TF}", "{TF}_peaks.narrowPeak")
-        output:
-            os.path.join(config["out_dir"], "{TF}", "peak_summits", "{TF}_peak_summits.bed")
-        message:
-            "; Peak summits - TF : {wildcards.TF}"
-        priority:
-            100
-        shell:
-            """
-            awk '{{ print $1"\\t"($2+$10)"\\t"($2+$10+1)}}' {input} > {output}
-            """
-            
-#####################################
-## REMAP 2022 Arabidopsis thaliana ##
-#####################################
-if config['analysis_id'] == "ReMap2020_Athaliana":
+#########################
+## REMAP 2022 datasets ##
+#########################
+if config['analysis_id'] == "ReMap2022_Human" or config['analysis_id'] == "ReMap2022_Dmelanogaster" or  config['analysis_id'] == "ReMap2022_Mmusculus":
+     rule extract_peak_summits:
+          """
+          Extract peak summits: chromosome, start, end
+          """
+          input:
+               os.path.join(config["data_folder"],
+     "{TF}", "{TF}_peaks.narrowPeak")
+          output:
+               os.path.join(config["out_dir"], "{TF}", "peak_summits", "{TF}_peak_summits.bed")
+          message:
+               "; Peak summits - TF : {wildcards.TF}"
+          priority:
+               100
+          shell:
+               """
+               awk '{{ print $1"\\t"$7"\\t"$8}}' {input} > {output}
+               """
+
+
+#########################
+## REMAP 2020 datasets ##
+#########################
+if config['analysis_id'] == "ReMap2020_Athaliana" :
    
    rule extract_peak_summits:
         """
@@ -117,7 +126,7 @@ if config['analysis_id'] == "ReMap2020_Athaliana":
             awk '{{ print "chr"$1"\\t"($2+$10)"\\t"($2+$10+1)}}' {input} > {output}
             """
 
-            
+ 
 #############
 ## ChExMix ##
 #############       

@@ -37,13 +37,14 @@ JASPAR_ANN_TAB = os.path.join(config["out_dir"], "Jaspar_2020_info_" + config["t
 ## Rules
 rule all:
     input:
-        expand(os.path.join(config["out_dir"], "{organism}", "{TF}", "peak-motifs", "results", "discovered_motifs", "{TF}_motifs_discovered.tf"),
-        zip, organism = ORGANISMS, TF = TF_NAMES),
-        expand(os.path.join(config["out_dir"], "{organism}", "{TF}", "central_enrichment", "selected_motif", "{TF}.501bp.fa.sites.centrimo.best.TF_associated"),
-        zip, organism = ORGANISMS, TF = TF_NAMES),
-        JASPAR_ANN_TAB,
-        expand(os.path.join(config["curation_dir"], "{organism}", "Renamed_log.txt"), zip, organism = ORGANISMS),
-        expand(os.path.join(config["curation_dir"], "{organism}", "Selected_motifs_to_curate_log10_pval_-200.pdf"), zip, organism = ORGANISMS)
+        expand(os.path.join(config["out_dir"], "{organism}", "{TF}", "peak-motifs", "results", "discovered_motifs", "{TF}_motifs_discovered.tf"), zip, organism = ORGANISMS, TF = TF_NAMES), \
+        expand(os.path.join(config["out_dir"], "{organism}", "{TF}", "peak-motifs", "results", "discovered_motifs", "{TF}_motifs_map.tab"), zip, organism = ORGANISMS, TF = TF_NAMES), \
+        expand(os.path.join(config["out_dir"], "{organism}", "{TF}", "central_enrichment", "selected_motif", "{TF}.501bp.fa.sites.centrimo.best.TF_associated"), zip, organism = ORGANISMS, TF = TF_NAMES), \
+        #JASPAR_ANN_TAB, \
+        expand(os.path.join(config["curation_dir"], "{organism}", "Renamed_log.txt"), zip, organism = ORGANISMS), \
+        expand(os.path.join(config["curation_dir"], "{organism}", "Selected_motifs_to_curate_log10_pval_-200.pdf"), zip, organism = ORGANISMS), \
+        os.path.join(config["curation_dir"], "Check_sites_concat.tab")
+     
 
 #rule all:
 #    input:
@@ -175,6 +176,27 @@ rule RSAT_peakmotifs_per_exp:
         """
 
 
+##############################
+## Matrix format conversion ##
+##############################
+rule Motif_number_to_ID:
+    """
+    Map table to associate motif numbers (m1, m2, ...) with motif names from peak-motifs (e.g., oligos_6nt_mkv3_m1)
+    """
+    input:
+        os.path.join(config["out_dir"], "{organism}", "{TF}", "peak-motifs", "results", "discovered_motifs", "{TF}_motifs_discovered.tf")
+    output:
+       os.path.join(config["out_dir"], "{organism}", "{TF}", "peak-motifs", "results", "discovered_motifs", "{TF}_motifs_map.tab")
+    message:
+        "; Associating motif numbers with motif IDs : {wildcards.TF} "
+    priority:
+        96
+    shell:
+        """
+        grep '^AC' {input} | cut -d' ' -f3 | perl -pe '$_ = "peak-motifs_m$.\t$_"' > {output}
+
+        """
+
 
 ##############################
 ## Matrix format conversion ##
@@ -208,13 +230,22 @@ checkpoint RSAT_PSSM_to_JASPAR_format:
         -split \
         -prefix {params.prefix} \
         -o {params.prefix_motif} ;
+        
         {params.RSAT}/perl-scripts/convert-matrix -v 2 \
         -from tf -to tab \
         -i {input} \
         -return {params.return_fields} \
         -split \
         -prefix {params.prefix} \
-        -o {params.prefix_motif};
+        -o {params.prefix_motif} ;
+        
+        {params.RSAT}/perl-scripts/convert-matrix -v 2 \
+        -from tf -to tf \
+        -i {input} \
+        -return {params.return_fields} \
+        -split \
+        -prefix {params.prefix} \
+        -o {params.prefix_motif} ;
         """
 
 
@@ -281,26 +312,30 @@ rule find_RSAT_matrix_sites:
     This rule is executed for each discovered motif.
     """
     input:
-        logos = os.path.join(config["out_dir"], "{organism}", "{TF}", "motifs", "jaspar", "logos", "{TF}_peak-motifs_m{n}_logo.png"), \
-        sequences = os.path.join(config["out_dir"], "{organism}", "{TF}", "peak-motifs", "data", "sequences", "{TF}_test.fasta"), \
-        matrix = os.path.join(config["out_dir"], "{organism}", "{TF}", "motifs", "jaspar", "pfm", "{TF}_peak-motifs_m{n}.tab"), \
-        bg_file = os.path.join(config["out_dir"], "{organism}", "{TF}", "peak-motifs", "results", "composition", "{TF}_test_inclusive-1str-ovlp_2nt.txt")
+        matrix    = os.path.join(config["out_dir"], "{organism}", "{TF}", "motifs", "jaspar", "pfm", "{TF}_peak-motifs_m{n}.tab"), \
+        map_table = os.path.join(config["out_dir"], "{organism}", "{TF}", "peak-motifs", "results", "discovered_motifs", "{TF}_motifs_map.tab")
     output:
         os.path.join(config["out_dir"], "{organism}", "{TF}", "matrix_sites", "{TF}_peak-motifs_m{n}.tf.sites")
     message:
         "; Scanning PSSM on 101bp peaks - TF : {wildcards.TF} - Matrix number: {wildcards.n}"
     params:
-        RSAT = config["RSAT"]
+        results_dir = os.path.join(config["out_dir"], "{organism}", "{TF}", "peak-motifs", "results"), \
+        sites_dir   = os.path.join(config["out_dir"], "{organism}", "{TF}", "matrix_sites")
     priority:
-        93
+        92
     shell:
         """
-        {params.RSAT}/bin/matrix-scan-quick \
-        -i {input.sequences} \
-        -m {input.matrix} \
-        -bgfile {input.bg_file} \
-        -t 5 \
-        -return sites > {output}
+        mkdir -p sites_dir ; 
+        MOTIF_FILE="{input.matrix}"
+        MOTIF_NB=` echo ${{MOTIF_FILE##*/}} | perl -lne '$_ =~ s/^*_(peak-motifs_m\\d+)/$1/gi; print $1;' `
+
+        MAP_TABLE="{input.map_table}"
+        MOTIF_ID=` grep -P "$MOTIF_NB\\s" $MAP_TABLE | cut -f2 | perl -lne '$_ =~ s/_m\\d+//gi; print $_;' `
+        MOTIF_ID_NB=` grep -P "$MOTIF_NB\\s" $MAP_TABLE | cut -f2 `
+
+        SITES_FILE=` ls {params.results_dir}/$MOTIF_ID/*.ft `
+
+        cat $SITES_FILE | grep $MOTIF_ID_NB | grep -v '^;' | grep -v '^#' > {output}
         """
 
 
@@ -351,6 +386,35 @@ rule get_RSAT_matrix_sites_fasta:
         bedtools getfasta -name -s -fi $fasta_file -bed {input} -fo {output}
         """
 
+
+
+rule count_PFM_BED_FASTA_sites:
+     """
+     """
+     input:
+          fasta = os.path.join(config["out_dir"], "{organism}", "{TF}", "matrix_sites", "{TF}_peak-motifs_m{n}.tf.sites.fasta"), \
+          bed   = os.path.join(config["out_dir"], "{organism}", "{TF}", "matrix_sites", "{TF}_peak-motifs_m{n}.tf.sites.bed"), \
+          pfm   = os.path.join(config["out_dir"], "{organism}", "{TF}", "motifs", "jaspar", "pfm", "{TF}_peak-motifs_m{n}.jaspar")
+     output:
+           os.path.join(config["out_dir"], "{organism}", "{TF}", "matrix_sites", "{TF}_peak-motifs_m{n}.tf.sites.check.txt")
+     message:
+          "; Finding discrepancies among PFM sum, number of BED coordinates and number of FASTA sequences"
+     priority:
+          89
+     shell:
+          """
+          
+          nb_seqs=$(grep ">" {input.fasta} | wc -l) ;
+
+          nb_regions=$(cat {input.bed} | wc -l) ;
+
+          nb_pfm_sites=$(grep -v '>' {input.pfm} | perl -lne ' $_ =~ s/[ACGT\\[\\]]//gi; $_ =~ s/^\\s+//gi; $_ =~ s/\\s+/\\t/g; print $_; ' | perl -lane '$j=0; foreach $i (@F){{$sum[$j]+=$i; $j+=1;}}; END{{print join("\\n",@sum)}} ' | uniq  | xargs  | sed 's/ /,/g')
+
+          printf "{wildcards.TF}_peak-motifs_m{wildcards.n}\\t$nb_seqs\\t$nb_regions\\t$nb_pfm_sites\\n" | awk '{{ if ($2 == $3 && $2 == $4) {{ print $0"\t1"}} else {{ print $0"\t0" }} }}' > {output}
+          
+          """
+
+     
 
 ######################################################
 ## Motif centrality section:                        ##
@@ -539,6 +603,25 @@ rule best_centrimo_experiment_logo:
         """
         bash create_latex_logos.sh -l {params.scripts_bin}/latex_header.txt -i {input} -o {output}
         """
+
+
+rule concat_check_tab:
+     """
+     """
+     input:
+          MOST_ENRICHED_MOTIF_ASSOC_LOGO
+     output:
+          os.path.join(config["curation_dir"], "Check_sites_concat.tab")
+     message:
+          "; Concatenating Sites check tables"
+     priority:
+          81
+     params:
+          out_dir = os.path.join(config["out_dir"])
+     shell:
+          """
+          cat {params.out_dir}/*/matrix_sites/*.check.txt | sed '1 i\\Motif_ID\\tFASTA_seq\\tBED_reg\\tPFM_sites\\tCheck' > {output}
+          """
 
 
 rule Concat_annotated_experiments:

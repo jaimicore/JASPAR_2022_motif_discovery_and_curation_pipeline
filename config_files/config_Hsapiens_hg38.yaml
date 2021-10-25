@@ -14,7 +14,7 @@ RSAT   : /lsc/rsat
 ## Motif discovery (RSAT peak-motifs) parameters ##
 ## ============================================= ##
 peakmotifs_disco : oligos,dyads,positions,local_words
-peakmotifs_disco_nb_motifs : 2
+peakmotifs_disco_nb_motifs : 3
 peakmotifs_disco_min_oligo : 6
 peakmotifs_disco_max_oligo : 7
 peakmotifs_class_interval  : 25

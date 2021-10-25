@@ -1,0 +1,40 @@
+################################################################
+author: Jaime_A_Castro_Mondragon + Rafael_Ruidavets_Puig
+
+## === ##
+## Bin ##
+## === ##
+bin : bin
+
+python : python2.7
+RSAT   : /lsc/rsat
+
+
+## ============================================= ##
+## Motif discovery (RSAT peak-motifs) parameters ##
+## ============================================= ##
+peakmotifs_disco : oligos,dyads,positions,local_words
+peakmotifs_disco_nb_motifs : 2
+peakmotifs_disco_min_oligo : 6
+peakmotifs_disco_max_oligo : 7
+peakmotifs_class_interval  : 25
+
+
+central_pvalue : 0
+top_motifs     : 3
+
+
+## ==================================================== ##
+## Homo sapiens hg38 : folders and required input files ##
+## ==================================================== ##
+data_folder       : /storage/mathelierarea/processed/jamondra/Projects/JASPAR/JASPAR_2022/Correct_number_sites/JASPAR_2022_motif_discovery_and_curation_pipeline/REMAP_2020_Mmusculus/data/mm10
+TF_Experiment_map : /storage/mathelierarea/processed/rafael/JASPAR_2022_motif_discovery_and_curation_pipeline/REMAP_2020_Mmusculus/data/mapping.tsv
+genome_fasta      : /storage/mathelierarea/processed/rafael/JASPAR_2022_motif_discovery_and_curation_pipeline/REMAP_2020_Mmusculus/data/genomes/mm10/mm10.fa
+genome_size       : /storage/mathelierarea/processed/rafael/JASPAR_2022_motif_discovery_and_curation_pipeline/REMAP_2020_Mmusculus/data/genomes/mm10/mm10.chroms.sizes
+genome_name       : mm10
+out_dir           : /storage/mathelierarea/processed/jamondra/Projects/JASPAR/JASPAR_2022/Correct_number_sites/JASPAR_2022_motif_discovery_and_curation_pipeline/REMAP_2020_Mmusculus/results
+curation_dir      : /storage/mathelierarea/processed/jamondra/Projects/JASPAR/JASPAR_2022/Correct_number_sites/JASPAR_2022_motif_discovery_and_curation_pipeline/REMAP_2020_Mmusculus/results/curation
+taxon             : Vertebrates
+
+
+

@@ -21,7 +21,7 @@ peakmotifs_class_interval : 25
 
 
 ## Log10(central p-value)
-central_pvalue : -50
+central_pvalue : 50
 top_motifs     : 1
 
 
@@ -35,4 +35,4 @@ genome_size       : /storage/scratch/JASPAR_2022/Genome_files/Yeast/sacCer3/sacC
 out_dir           : /storage/mathelierarea/processed/jamondra/Projects/JASPAR/JASPAR_2022/Correct_number_sites/JASPAR_2022_motif_discovery_and_curation_pipeline/ChExMix_sacCer3/results/Yeast_SacCer3
 curation_dir      : /storage/mathelierarea/processed/jamondra/Projects/JASPAR/JASPAR_2022/Correct_number_sites/JASPAR_2022_motif_discovery_and_curation_pipeline/ChExMix_sacCer3/results/Yeast_SacCer3/curation
 taxon             : Fungi
-genome_name       : SacCer
+genome_name       : SacCer3

@@ -26,8 +26,8 @@ central_pvalue : 0
 ## ================================================================= ##
 ## Arabaidposis thaliana (TAIR10) : folders and required input files ##
 ## ================================================================= ##
-data_folder : /storage/mathelierarea/processed/jamondra/Projects/JASPAR/JASPAR_2022/Correct_number_sites/JASPAR_2022_motif_discovery_and_curation_pipeline/Plants_Klaas/data
+data_folder       : /storage/mathelierarea/processed/jamondra/Projects/JASPAR/JASPAR_2022/Correct_number_sites/JASPAR_2022_motif_discovery_and_curation_pipeline/Plants_Klaas/data
 TF_Experiment_map : /storage/mathelierarea/processed/jamondra/Projects/JASPAR/JASPAR_2022/Correct_number_sites/JASPAR_2022_motif_discovery_and_curation_pipeline/Plants_Klaas/data/mapping.tsv
-out_dir : /storage/mathelierarea/processed/jamondra/Projects/JASPAR/JASPAR_2022/Correct_number_sites/JASPAR_2022_motif_discovery_and_curation_pipeline/Plants_Klaas/results
-curation_dir : /storage/mathelierarea/processed/jamondra/Projects/JASPAR/JASPAR_2022/Correct_number_sites/JASPAR_2022_motif_discovery_and_curation_pipeline/Plants_Klaas/results/curation
-taxon : Plants
+out_dir           : /storage/mathelierarea/processed/jamondra/Projects/JASPAR/JASPAR_2022/Correct_number_sites/JASPAR_2022_motif_discovery_and_curation_pipeline/Plants_Klaas/results
+curation_dir      : /storage/mathelierarea/processed/jamondra/Projects/JASPAR/JASPAR_2022/Correct_number_sites/JASPAR_2022_motif_discovery_and_curation_pipeline/Plants_Klaas/results/curation
+taxon             : Plants
